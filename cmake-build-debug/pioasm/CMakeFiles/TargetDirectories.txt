@@ -1,0 +1,3 @@
+/Users/rq/pico/car/cmake-build-debug/pioasm/CMakeFiles/pioasm.dir
+/Users/rq/pico/car/cmake-build-debug/pioasm/CMakeFiles/edit_cache.dir
+/Users/rq/pico/car/cmake-build-debug/pioasm/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,13 @@
+# Target labels
+ ELF2UF2Build
+# Source files and their labels
+/Users/rq/pico/car/cmake-build-debug/frtos/car/CMakeFiles/ELF2UF2Build
+/Users/rq/pico/car/cmake-build-debug/frtos/car/CMakeFiles/ELF2UF2Build.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/CMakeFiles/ELF2UF2Build-complete.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-build.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-configure.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-download.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-install.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-mkdir.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-patch.rule
+/Users/rq/pico/car/cmake-build-debug/frtos/car/elf2uf2/src/ELF2UF2Build-stamp/ELF2UF2Build-update.rule

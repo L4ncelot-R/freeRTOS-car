@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "frtos/FREERTOS_KERNEL",
+		"source" : "/Users/rq/pico/FreeRTOS-KernelV10.6.1/portable/ThirdParty/GCC/RP2040"
+	}
+}

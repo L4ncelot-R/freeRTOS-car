@@ -1,0 +1,1 @@
+cmd='/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake;-DCMAKE_MAKE_PROGRAM:FILEPATH=/opt/homebrew/bin/gmake;-GUnix Makefiles;-C<TMP_DIR>/PioasmBuild-cache-$<CONFIG>.cmake;-S;<SOURCE_DIR><SOURCE_SUBDIR>;-B;<BINARY_DIR>'
