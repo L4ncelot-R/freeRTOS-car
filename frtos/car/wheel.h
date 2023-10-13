@@ -26,7 +26,58 @@
 uint g_slice_num_left  = 0U;
 uint g_slice_num_right = 0U;
 
-SemaphoreHandle_t g_wheel_speed_sem = NULL;
+SemaphoreHandle_t g_wheel_speed_sem_left = NULL;
+SemaphoreHandle_t g_wheel_speed_sem_right = NULL;
+
+void
+wheel_setup(void)
+{
+  // Semaphore
+  g_wheel_speed_sem_left = xSemaphoreCreateBinary();
+  g_wheel_speed_sem_right = xSemaphoreCreateBinary();
+
+  // Speed
+  /*    adc_init();
+      adc_gpio_init(SPEED_PIN_RIGHT);
+      adc_gpio_init(SPEED_PIN_LEFT);*/
+
+  gpio_init(SPEED_PIN_RIGHT);
+  gpio_init(SPEED_PIN_LEFT);
+  gpio_set_dir(SPEED_PIN_RIGHT, GPIO_IN);
+  gpio_set_dir(SPEED_PIN_LEFT, GPIO_IN);
+
+  // Initialize direction pins as outputs
+  gpio_init(DIRECTION_PIN_RIGHT_IN1);
+  gpio_init(DIRECTION_PIN_RIGHT_IN2);
+  gpio_init(DIRECTION_PIN_LEFT_IN3);
+  gpio_init(DIRECTION_PIN_LEFT_IN4);
+
+  gpio_set_dir(DIRECTION_PIN_RIGHT_IN1, GPIO_OUT);
+  gpio_set_dir(DIRECTION_PIN_RIGHT_IN2, GPIO_OUT);
+  gpio_set_dir(DIRECTION_PIN_LEFT_IN3, GPIO_OUT);
+  gpio_set_dir(DIRECTION_PIN_LEFT_IN4, GPIO_OUT);
+
+  // Initialise PWM
+  gpio_set_function(PWM_PIN_LEFT, GPIO_FUNC_PWM);
+  gpio_set_function(PWM_PIN_RIGHT, GPIO_FUNC_PWM);
+
+  g_slice_num_left = pwm_gpio_to_slice_num(PWM_PIN_LEFT);
+  g_slice_num_right = pwm_gpio_to_slice_num(PWM_PIN_RIGHT);
+
+  // NOTE: PWM clock is 125MHz for raspberrypi pico w by default
+
+  // 125MHz / 250 = 500kHz
+  pwm_set_clkdiv(g_slice_num_left, PWM_CLK_DIV);
+  pwm_set_clkdiv(g_slice_num_right, PWM_CLK_DIV);
+
+  // have them to be 500kHz / 5000 = 100Hz
+  pwm_set_wrap(g_slice_num_left,  (PWM_WRAP - 1U));
+  pwm_set_wrap(g_slice_num_right, (PWM_WRAP - 1U));
+
+  pwm_set_enabled(g_slice_num_left, true);
+  pwm_set_enabled(g_slice_num_right, true);
+}
+
 
 /*!
 * @brief Set the direction of the wheels; can use bitwise OR to set both
@@ -50,67 +101,6 @@ set_wheel_direction (uint32_t direction)
     gpio_set_mask(direction);
 }
 
-uint8_t
-get_wheel_slot_count (uint adc_pin)
-{
-    adc_select_input(adc_pin);
-
-    uint8_t    count    = 0u;
-    TickType_t xEndTime = xTaskGetTickCount() +
-                          pdMS_TO_TICKS(SPEED_READING_TRESHOLD_MSEC);
-
-    static volatile bool b_is_adc_high = false;
-
-    while (xTaskGetTickCount() < xEndTime)
-    {
-        /*
-         * If the sensor value is below the threshold and the previous reading
-         * was above the threshold, then increment the count.
-         */
-        if (b_is_adc_high && (adc_read() < ADC_READING_TRESHOLD))
-        {
-            count++;
-            b_is_adc_high = false;
-        }
-        else if (!b_is_adc_high && (adc_read() >= ADC_READING_TRESHOLD))
-        {
-            b_is_adc_high = true;
-        }
-    }
-
-    b_is_adc_high = false;
-
-    return count;
-
-}
-
-void
-monitor_left_wheel_speed_task (__unused void * p_params)
-{
-    for (;;)
-    {
-        xSemaphoreTake(g_wheel_speed_sem, portMAX_DELAY);
-        printf("left wheel: %d\n", get_wheel_slot_count(0));
-        xSemaphoreGive(g_wheel_speed_sem);
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-}
-
-void
-monitor_right_wheel_speed_task (__unused void * p_params)
-{
-    static uint8_t count = 0u;
-
-    for (;;)
-    {
-        xSemaphoreTake(g_wheel_speed_sem, portMAX_DELAY);
-        count = get_wheel_slot_count(1);
-        printf("right wheel: %f rounds\n", (((float) count) / 20.f));
-        xSemaphoreGive(g_wheel_speed_sem);
-        vTaskDelay(pdMS_TO_TICKS(10));
-    }
-}
-
 void
 set_wheel_speed (float speed)
 {
@@ -124,44 +114,67 @@ set_wheel_speed (float speed)
 }
 
 void
-wheel_setup(void)
+left_wheel_sensor_isr (__unused uint gpio, __unused uint32_t events)
 {
-    // Semaphore
-    g_wheel_speed_sem = xSemaphoreCreateMutex();
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(g_wheel_speed_sem_left, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
 
-    // Speed
-    adc_init();
-    adc_gpio_init(SPEED_PIN_RIGHT);
-    adc_gpio_init(SPEED_PIN_LEFT);
+void
+right_wheel_sensor_isr (__unused uint gpio, __unused uint32_t events)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(g_wheel_speed_sem_right, &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
 
-    // Initialize direction pins as outputs
-    gpio_init(DIRECTION_PIN_RIGHT_IN1);
-    gpio_init(DIRECTION_PIN_RIGHT_IN2);
-    gpio_init(DIRECTION_PIN_LEFT_IN3);
-    gpio_init(DIRECTION_PIN_LEFT_IN4);
+void
+monitor_left_wheel_speed_task (__unused void *pvParameters)
+{
+    for (;;)
+    {
+        if (xSemaphoreTake(g_wheel_speed_sem_left, portMAX_DELAY) == pdTRUE)
+        {
+            static uint64_t curr_time_left  = 0u;
+                            curr_time_left  = time_us_64();
 
-    gpio_set_dir(DIRECTION_PIN_RIGHT_IN1, GPIO_OUT);
-    gpio_set_dir(DIRECTION_PIN_RIGHT_IN2, GPIO_OUT);
-    gpio_set_dir(DIRECTION_PIN_LEFT_IN3, GPIO_OUT);
-    gpio_set_dir(DIRECTION_PIN_LEFT_IN4, GPIO_OUT);
 
-    // Initialise PWM
-    gpio_set_function(PWM_PIN_LEFT, GPIO_FUNC_PWM);
-    gpio_set_function(PWM_PIN_RIGHT, GPIO_FUNC_PWM);
+            static uint64_t prev_time_left    = 0u;
+            static uint64_t elapsed_time_left = 0u;
 
-    g_slice_num_left = pwm_gpio_to_slice_num(PWM_PIN_LEFT);
-    g_slice_num_right = pwm_gpio_to_slice_num(PWM_PIN_RIGHT);
+            elapsed_time_left = curr_time_left - prev_time_left;
 
-    // NOTE: PWM clock is 125MHz for raspberrypi pico w by default
+            printf("time elapsed: %llu\n", elapsed_time_left);
 
-    // 125MHz / 250 = 500kHz
-    pwm_set_clkdiv(g_slice_num_left, PWM_CLK_DIV);
-    pwm_set_clkdiv(g_slice_num_right, PWM_CLK_DIV);
+            prev_time_left = curr_time_left;
 
-    // have them to be 500kHz / 5000 = 100Hz
-    pwm_set_wrap(g_slice_num_left,  (PWM_WRAP - 1U));
-    pwm_set_wrap(g_slice_num_right, (PWM_WRAP - 1U));
+        }
 
-    pwm_set_enabled(g_slice_num_left, true);
-    pwm_set_enabled(g_slice_num_right, true);
+    }
+
+}
+
+void
+monitor_right_wheel_speed_task (__unused void *pvParameters)
+{
+    for (;;)
+    {
+        if (xSemaphoreTake(g_wheel_speed_sem_right, portMAX_DELAY) == pdTRUE)
+        {
+            static uint64_t curr_time_right  = 0u;
+                            curr_time_right  = time_us_64();
+
+            static uint64_t prev_time_right    = 0u;
+            static uint64_t elapsed_time_right = 0u;
+
+            elapsed_time_right = curr_time_right - prev_time_right;
+
+            printf("time elapsed: %llu\n", elapsed_time_right);
+
+            prev_time_right = curr_time_right;
+        }
+
+    }
+
 }
