@@ -101,16 +101,27 @@ set_wheel_direction (uint32_t direction)
     gpio_set_mask(direction);
 }
 
+/*!
+ * @brief Set the speed of the wheels; can use bitwise OR to set both
+ * @param speed in range [0.0, 1.0]
+ * @param side 0 for left, 1 for right
+ */
 void
-set_wheel_speed (float speed)
+set_wheel_speed (float speed, uint8_t side)
 {
-    pwm_set_chan_level(g_slice_num_left,
-                       PWM_CHAN_A,
-                       (short) (PWM_WRAP * speed));
+    if (side == 0U)
+    {
+        pwm_set_chan_level(g_slice_num_left,
+                           PWM_CHAN_A,
+                           (short) (PWM_WRAP * speed));
+    }
+    else
+    {
+        pwm_set_chan_level(g_slice_num_right,
+                           PWM_CHAN_B,
+                           (short) (PWM_WRAP * speed));
+    }
 
-    pwm_set_chan_level(g_slice_num_right,
-                       PWM_CHAN_B,
-                       (short) (PWM_WRAP * speed));
 }
 
 void

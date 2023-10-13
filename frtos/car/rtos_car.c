@@ -64,7 +64,7 @@ main (void)
     sleep_ms(2000);
 
     set_wheel_direction(DIRECTION_RIGHT_FORWARD);
-    set_wheel_speed(1.f);
+    set_wheel_speed(1.f, 1u);
 
     launch();
 
