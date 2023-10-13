@@ -19,9 +19,13 @@
 #define PWM_CLK_DIV 250.f
 #define PWM_WRAP    5000U
 
-#define ADC_READING_TRESHOLD 3500u
+#define PID_KP 10.f
+#define PID_KI 0.0f
+#define PID_KD 0.0f
 
-#define SPEED_READING_TRESHOLD_MSEC 1000u
+#define START_SPEED         1500U
+#define MAX_SPEED           4900U
+#define MIN_SPEED           0U    // To be changed
 
 uint g_slice_num_left  = 0U;
 uint g_slice_num_right = 0U;
@@ -35,11 +39,6 @@ wheel_setup(void)
   // Semaphore
   g_wheel_speed_sem_left = xSemaphoreCreateBinary();
   g_wheel_speed_sem_right = xSemaphoreCreateBinary();
-
-  // Speed
-  /*    adc_init();
-      adc_gpio_init(SPEED_PIN_RIGHT);
-      adc_gpio_init(SPEED_PIN_LEFT);*/
 
   gpio_init(SPEED_PIN_RIGHT);
   gpio_init(SPEED_PIN_LEFT);
@@ -103,7 +102,7 @@ set_wheel_direction (uint32_t direction)
 
 /*!
  * @brief Set the speed of the wheels; can use bitwise OR to set both
- * @param speed in range [0.0, 1.0]
+ * @param speed in range [0, 5000]
  * @param side 0 for left, 1 for right
  */
 void
@@ -112,14 +111,14 @@ set_wheel_speed (float speed, uint8_t side)
     if (side == 0U)
     {
         pwm_set_chan_level(g_slice_num_left,
-                           PWM_CHAN_A,
-                           (short) (PWM_WRAP * speed));
+                         PWM_CHAN_A,
+                         (uint16_t) speed);
     }
     else
     {
         pwm_set_chan_level(g_slice_num_right,
                            PWM_CHAN_B,
-                           (short) (PWM_WRAP * speed));
+                           (uint16_t) speed);
     }
 
 }
@@ -131,7 +130,7 @@ h_left_wheel_sensor_isr_handler (void)
     {
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
-        printf("left wheel sensor isr\n");
+        // printf("left wheel sensor isr\n");
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(g_wheel_speed_sem_left, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
@@ -145,16 +144,36 @@ h_right_wheel_sensor_isr_handler (void)
     {
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
-        printf("right wheel sensor isr\n");
+        // printf("right wheel sensor isr\n");
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(g_wheel_speed_sem_right, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
 
-void
-monitor_left_wheel_speed_task (__unused void *pvParameters)
+float
+compute_pid(float target_speed, float current_speed, float * integral, float * prev_error)
 {
+    float error = target_speed - current_speed;
+    *integral += error;
+
+    float derivative = error - *prev_error;
+
+    float control_signal = PID_KP * error +
+                           PID_KI * (*integral) +
+                           PID_KD * derivative;
+
+    *prev_error = error;
+
+    return control_signal;
+}
+
+void
+monitor_left_wheel_speed_task (void *pvParameters)
+{
+    static float * target_speed = NULL;
+    *target_speed = * (float *) pvParameters;
+
     for (;;)
     {
         if (xSemaphoreTake(g_wheel_speed_sem_left, portMAX_DELAY) == pdTRUE)
@@ -187,8 +206,12 @@ monitor_left_wheel_speed_task (__unused void *pvParameters)
 }
 
 void
-monitor_right_wheel_speed_task (__unused void *pvParameters)
+monitor_right_wheel_speed_task (void *pvParameters)
 {
+    // volatile float * target_speed = (float *) pvParameters;
+    static volatile float * target_speed = NULL;
+    target_speed = (float *) pvParameters;
+
     for (;;)
     {
         if (xSemaphoreTake(g_wheel_speed_sem_right, portMAX_DELAY) == pdTRUE)
@@ -209,6 +232,36 @@ monitor_right_wheel_speed_task (__unused void *pvParameters)
                 (1.02101761242f / (elapsed_time_right / 1000000.f));
 
             printf("right speed: %f cm/s\n", speed_right);
+
+            static float control_signal = 0.f;
+            static float integral = 0.f;
+            static float prev_error = 0.f;
+
+            control_signal = compute_pid(*target_speed,
+                                         speed_right,
+                                         &integral,
+                                         &prev_error);
+
+            static float new_pwm = START_SPEED;
+
+            if (new_pwm + control_signal > MAX_SPEED)
+            {
+                new_pwm = MAX_SPEED;
+            }
+            else if (new_pwm + control_signal < MIN_SPEED)
+            {
+                new_pwm = MIN_SPEED;
+            }
+            else
+            {
+                new_pwm = new_pwm + control_signal;
+            }
+
+            printf("control signal: %f\n", control_signal);
+            printf("new pwm: %f\n\n", new_pwm);
+
+            set_wheel_speed(new_pwm, 1u);
+
         }
 
     }

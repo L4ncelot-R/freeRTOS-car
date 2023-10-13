@@ -37,11 +37,15 @@ launch()
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 
+    static volatile float * p_target_speed = NULL;
+    static volatile float target_speed  = 20.0f; // cm/s
+    p_target_speed = &target_speed;
+
     TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
     xTaskCreate(monitor_left_wheel_speed_task,
                 "monitor_left_wheel_speed_task",
                 configMINIMAL_STACK_SIZE,
-                NULL,
+                (void *) p_target_speed,
                 READ_LEFT_WHEEL_SPEED_PRIO,
                 &h_monitor_left_wheel_speed_task_handle);
 
@@ -49,7 +53,7 @@ launch()
     xTaskCreate(monitor_right_wheel_speed_task,
                 "monitor_right_wheel_speed_task",
                 configMINIMAL_STACK_SIZE,
-                NULL,
+                (void *) p_target_speed,
                 READ_RIGHT_WHEEL_SPEED_PRIO,
                 &h_monitor_right_wheel_speed_task_handle);
 
@@ -61,10 +65,10 @@ main (void)
 {
     stdio_usb_init();
     wheel_setup();
-    sleep_ms(2000);
+    sleep_ms(5000);
 
     set_wheel_direction(DIRECTION_RIGHT_FORWARD);
-    set_wheel_speed(1.f, 1u);
+    set_wheel_speed(START_SPEED, 1u);
 
     launch();
 
