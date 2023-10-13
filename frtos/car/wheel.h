@@ -13,8 +13,8 @@
 #define DIRECTION_LEFT_FORWARD    (1U << DIRECTION_PIN_LEFT_IN4)
 #define DIRECTION_LEFT_BACKWARD   (1U << DIRECTION_PIN_LEFT_IN3)
 
-#define SPEED_PIN_RIGHT 27U // ADC0
-#define SPEED_PIN_LEFT  26U // ADC1
+#define SPEED_PIN_RIGHT 15U
+#define SPEED_PIN_LEFT  16U
 
 #define PWM_CLK_DIV 250.f
 #define PWM_WRAP    5000U
@@ -125,19 +125,31 @@ set_wheel_speed (float speed, uint8_t side)
 }
 
 void
-left_wheel_sensor_isr (__unused uint gpio, __unused uint32_t events)
+h_left_wheel_sensor_isr_handler (void)
 {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(g_wheel_speed_sem_left, &xHigherPriorityTaskWoken);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    if (gpio_get_irq_event_mask(SPEED_PIN_LEFT) & GPIO_IRQ_EDGE_FALL)
+    {
+        gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
+
+        printf("left wheel sensor isr\n");
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(g_wheel_speed_sem_left, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
 }
 
 void
-right_wheel_sensor_isr (__unused uint gpio, __unused uint32_t events)
+h_right_wheel_sensor_isr_handler (void)
 {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(g_wheel_speed_sem_right, &xHigherPriorityTaskWoken);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    if (gpio_get_irq_event_mask(SPEED_PIN_RIGHT) & GPIO_IRQ_EDGE_FALL)
+    {
+        gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
+
+        printf("right wheel sensor isr\n");
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(g_wheel_speed_sem_right, &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
 }
 
 void
@@ -152,13 +164,21 @@ monitor_left_wheel_speed_task (__unused void *pvParameters)
 
 
             static uint64_t prev_time_left    = 0u;
-            static uint64_t elapsed_time_left = 0u;
+            static uint64_t elapsed_time_left = 1u; // to avoid division by 0
 
             elapsed_time_left = curr_time_left - prev_time_left;
 
-            printf("time elapsed: %llu\n", elapsed_time_left);
-
             prev_time_left = curr_time_left;
+
+            static float speed_left = 0.f;
+            // speed in cm/s; speed = distance / time
+            // distance = circumference / 20
+            // circumference = 2 * pi * 3.25 cm = 20.4203522483 cm
+            // distance = 20.4203522483 cm / 20 = 1.02101761242 cm
+            speed_left = (float)
+                (1.02101761242f / (elapsed_time_left / 1000000.f));
+
+            printf("left speed: %f cm/s\n", speed_left);
 
         }
 
@@ -177,13 +197,18 @@ monitor_right_wheel_speed_task (__unused void *pvParameters)
                             curr_time_right  = time_us_64();
 
             static uint64_t prev_time_right    = 0u;
-            static uint64_t elapsed_time_right = 0u;
+            static uint64_t elapsed_time_right = 1u; // to avoid division by 0
 
             elapsed_time_right = curr_time_right - prev_time_right;
 
-            printf("time elapsed: %llu\n", elapsed_time_right);
-
             prev_time_right = curr_time_right;
+
+            static float speed_right = 0.f;
+
+            speed_right = (float)
+                (1.02101761242f / (elapsed_time_right / 1000000.f));
+
+            printf("right speed: %f cm/s\n", speed_right);
         }
 
     }

@@ -25,17 +25,17 @@
 void
 launch()
 {
-    // isr to detect left wheel slot
-    gpio_set_irq_enabled_with_callback(SPEED_PIN_RIGHT,
-                                       GPIO_IRQ_EDGE_FALL,
-                                       true,
-                                       &right_wheel_sensor_isr);
-
     // isr to detect right wheel slot
-    gpio_set_irq_enabled_with_callback(SPEED_PIN_LEFT,
-                                       GPIO_IRQ_EDGE_FALL,
-                                       true,
-                                       &left_wheel_sensor_isr);
+    gpio_set_irq_enabled(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL, true);
+    gpio_add_raw_irq_handler(SPEED_PIN_RIGHT,
+                             h_right_wheel_sensor_isr_handler);
+
+    // isr to detect left wheel slot
+    gpio_set_irq_enabled(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL, true);
+    gpio_add_raw_irq_handler(SPEED_PIN_LEFT,
+                             h_left_wheel_sensor_isr_handler);
+
+    irq_set_enabled(IO_IRQ_BANK0, true);
 
     TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
     xTaskCreate(monitor_left_wheel_speed_task,
