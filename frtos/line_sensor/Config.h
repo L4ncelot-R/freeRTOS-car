@@ -6,9 +6,9 @@
 
 #define ADC_READING_DELAY_MS                    ( 300 )
 
-#define ADC_PIN_ONE                             ( 26 )
-#define ADC_PIN_TWO                             ( 27 ) // Comment this line out
-                                                       // if you only have one
+#define LEFT_SENSOR_PIN                         ( 26 )
+#define RIGHT_SENSOR_PIN                        ( 27 ) // Comment this line out
+// if you only have one
 
 #define THRESHOLD                               ( VREF / 2 ) // 50% of VREF
 
