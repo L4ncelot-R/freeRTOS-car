@@ -68,9 +68,9 @@ line_sensor_setup() {
 }
 
 /**
- * @brief Initialize the car's initial state
+ * @brief Initialize the wheel's initial state
  *
- * @return The initialized car state
+ * @return The initialized wheel state
  */
 car_state_t
 initialize_car_state() {
@@ -86,9 +86,9 @@ initialize_car_state() {
 }
 
 /**
- * @brief Update the map based on the car's state
+ * @brief Update the map based on the wheel's state
  *
- * @param car_state The current car state
+ * @param car_state The current wheel state
  */
 static inline void
 update_map(car_state_t car_state) {
@@ -99,14 +99,14 @@ update_map(car_state_t car_state) {
 }
 
 /**
- * @brief Handle forward movement of the car
+ * @brief Handle forward movement of the wheel
  *
- * @param car_state The current car state
+ * @param car_state The current wheel state
  */
 static void
 handle_forward_movement(car_state_t *car_state) {
     printf("FORWARD, ");
-    // TODO: Check car's actual forward movement
+    // TODO: Check wheel's actual forward movement
     switch (car_state->orientation) {
         case NORTH:
             printf("NORTH\n");
@@ -128,11 +128,11 @@ handle_forward_movement(car_state_t *car_state) {
 }
 
 /**
- * @brief Handle a right turn of the car
+ * @brief Handle a right turn of the wheel
  *
  * Note: Bitwise AND with 0x03 to ensure that the orientation
  * is always between 0 and 3
- * @param car_state The current car state
+ * @param car_state The current wheel state
  */
 static inline void
 handle_right_turn(car_state_t *car_state) {
@@ -140,9 +140,9 @@ handle_right_turn(car_state_t *car_state) {
 }
 
 /**
- * @brief Handle a left turn of the car
+ * @brief Handle a left turn of the wheel
  *
- * @param car_state The current car state
+ * @param car_state The current wheel state
  */
 static inline void
 handle_left_turn(car_state_t *car_state) {

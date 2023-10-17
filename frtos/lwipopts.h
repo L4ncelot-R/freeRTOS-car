@@ -5,7 +5,7 @@
 // (see https://www.nongnu.org/lwip/2_1_x/group__lwip__opts.html)
 //
 // This example uses a common include to avoid repetition
-#include "../lwipopts_examples_common.h"
+#include "lwipopts_examples_common.h"
 
 #if !NO_SYS
 #define TCPIP_THREAD_STACKSIZE 1024

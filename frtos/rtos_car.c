@@ -18,6 +18,7 @@
 #include "semphr.h"
 
 #include "wheel.h"
+#include "line_sensor.h"
 
 #define READ_LEFT_WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
 #define READ_RIGHT_WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
@@ -25,6 +26,9 @@
 void
 launch()
 {
+
+
+
     // isr to detect right wheel slot
     gpio_set_irq_enabled(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL, true);
     gpio_add_raw_irq_handler(SPEED_PIN_RIGHT,
