@@ -11,13 +11,11 @@ launch()
 {
     // isr to detect right motor slot
     gpio_set_irq_enabled(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL, true);
-    gpio_add_raw_irq_handler(SPEED_PIN_RIGHT,
-                             h_right_wheel_sensor_isr_handler);
+    gpio_add_raw_irq_handler(SPEED_PIN_RIGHT, h_wheel_sensor_isr_handler);
 
     // isr to detect left motor slot
     gpio_set_irq_enabled(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL, true);
-    gpio_add_raw_irq_handler(SPEED_PIN_LEFT,
-                             h_left_wheel_sensor_isr_handler);
+    gpio_add_raw_irq_handler(SPEED_PIN_LEFT, h_wheel_sensor_isr_handler);
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 

@@ -27,29 +27,26 @@ set_wheel_speed(float speed, uint8_t side)
     }
 }
 
+/*!
+ * @brief Interrupt handler for the wheel sensor
+ */
 void
-h_left_wheel_sensor_isr_handler(void)
+h_wheel_sensor_isr_handler(void)
 {
     if (gpio_get_irq_event_mask(SPEED_PIN_LEFT) & GPIO_IRQ_EDGE_FALL)
     {
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
-        // printf("left motor sensor isr\n");
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(g_wheel_speed_sem_left,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
-}
 
-void
-h_right_wheel_sensor_isr_handler(void)
-{
     if (gpio_get_irq_event_mask(SPEED_PIN_RIGHT) & GPIO_IRQ_EDGE_FALL)
     {
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
-        // printf("right motor sensor isr\n");
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(g_wheel_speed_sem_right,
                               &xHigherPriorityTaskWoken);
@@ -57,6 +54,14 @@ h_right_wheel_sensor_isr_handler(void)
     }
 }
 
+/*!
+ * @brief Compute the control signal using PID controller
+ * @param target_speed The target speed of the wheel
+ * @param current_speed The current speed of the wheel
+ * @param integral The integral term of the PID controller
+ * @param prev_error The previous error of the PID controller
+ * @return The control signal
+ */
 float
 compute_pid(float  target_speed,
             float  current_speed,
