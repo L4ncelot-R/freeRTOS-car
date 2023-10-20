@@ -3,9 +3,10 @@
 #define MOTOR_CONFIG_H
 
 // ENA and ENB on the L298N
-#define PWM_PIN_LEFT                0U // chanel A
 #define PWM_PIN_RIGHT               1U // chanel B
+#define PWM_PIN_LEFT                0U // chanel A
 
+// IN1, IN2, IN3, IN4 on the L298N
 #define DIRECTION_PIN_RIGHT_IN1     11U
 #define DIRECTION_PIN_RIGHT_IN2     12U
 
@@ -27,7 +28,7 @@
 #define PID_KI                      0.0f
 #define PID_KD                      0.0f
 
-#define START_SPEED                 4900U
+#define START_SPEED                 0U
 #define MAX_SPEED                   4900U
 #define MIN_SPEED                   0U    // To be changed
 

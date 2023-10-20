@@ -79,24 +79,22 @@ compute_pid(float  target_speed,
 void
 monitor_left_wheel_speed_task(void *pvParameters)
 {
-    //  static float * target_speed = NULL;
-    //  *target_speed = * (float *) pvParameters;
+    static volatile float    speed_left     = 0.f;
+    static volatile uint64_t curr_time_left = 0u;
+                             curr_time_left = time_us_64();
 
     for (;;)
     {
-        if (xSemaphoreTake(g_wheel_speed_sem_left, portMAX_DELAY) == pdTRUE)
+        if (xSemaphoreTake(g_wheel_speed_sem_left, pdMS_TO_TICKS(1000)) ==
+            pdTRUE)
         {
-            static uint64_t curr_time_left = 0u;
-            curr_time_left                 = time_us_64();
-
+                            curr_time_left    = time_us_64();
             static uint64_t prev_time_left    = 0u;
             static uint64_t elapsed_time_left = 1u; // to avoid division by 0
 
             elapsed_time_left = curr_time_left - prev_time_left;
+            prev_time_left    = curr_time_left;
 
-            prev_time_left = curr_time_left;
-
-            static float speed_left = 0.f;
             // speed in cm/s; speed = distance / time
             // distance = circumference / 20
             // circumference = 2 * pi * 3.25 cm = 20.4203522483 cm
@@ -105,52 +103,54 @@ monitor_left_wheel_speed_task(void *pvParameters)
                 = (float)(1.02101761242f / (elapsed_time_left / 1000000.f));
 
             printf("left speed: %f cm/s\n", speed_left);
-
-            static float control_signal = 0.f;
-            static float integral       = 0.f;
-            static float prev_error     = 0.f;
-
-            control_signal = compute_pid(
-                *(float *)pvParameters, speed_left, &integral, &prev_error);
-
-            static float new_pwm = START_SPEED;
-
-            if (new_pwm + control_signal > MAX_SPEED)
-            {
-                new_pwm = MAX_SPEED;
-            }
-            else if (new_pwm + control_signal < MIN_SPEED)
-            {
-                new_pwm = MIN_SPEED;
-            }
-            else
-            {
-                new_pwm = new_pwm + control_signal;
-            }
-
-            printf("control signal: %f\n", control_signal);
-            printf("new pwm: %f\n\n", new_pwm);
-
-            set_wheel_speed(new_pwm, 0u);
         }
+        else
+        {
+            printf("left speed: 0 cm/s\n");
+        }
+
+        static float control_signal = 0.f;
+        static float integral       = 0.f;
+        static float prev_error     = 0.f;
+
+        control_signal = compute_pid(
+            *(float *)pvParameters, speed_left, &integral, &prev_error);
+
+        static float new_pwm = START_SPEED;
+
+        if (new_pwm + control_signal > MAX_SPEED)
+        {
+            new_pwm = MAX_SPEED;
+        }
+        else if (new_pwm + control_signal < MIN_SPEED)
+        {
+            new_pwm = MIN_SPEED;
+        }
+        else
+        {
+            new_pwm = new_pwm + control_signal;
+        }
+
+        printf("control signal: %f\n", control_signal);
+        printf("new pwm: %f\n\n", new_pwm);
+
+        set_wheel_speed(new_pwm, 0u);
     }
 }
 
 void
 monitor_right_wheel_speed_task(void *pvParameters)
 {
-    // volatile float * target_speed = (float *) pvParameters;
-
-    //  static volatile float * target_speed = NULL;
-    //  target_speed = (float *) pvParameters;
+    static volatile float    speed_right     = 0.f;
+    static volatile uint64_t curr_time_right = 0u;
+                             curr_time_right = time_us_64();
 
     for (;;)
     {
-        if (xSemaphoreTake(g_wheel_speed_sem_right, portMAX_DELAY) == pdTRUE)
+        if (xSemaphoreTake(g_wheel_speed_sem_right, pdMS_TO_TICKS(1000)) ==
+            pdTRUE)
         {
-            static uint64_t curr_time_right = 0u;
-            curr_time_right                 = time_us_64();
-
+                            curr_time_right    = time_us_64();
             static uint64_t prev_time_right    = 0u;
             static uint64_t elapsed_time_right = 1u; // to avoid division by 0
 
@@ -158,39 +158,42 @@ monitor_right_wheel_speed_task(void *pvParameters)
 
             prev_time_right = curr_time_right;
 
-            static float speed_right = 0.f;
-
             speed_right
                 = (float)(1.02101761242f / (elapsed_time_right / 1000000.f));
 
             printf("right speed: %f cm/s\n", speed_right);
-
-            static float control_signal = 0.f;
-            static float integral       = 0.f;
-            static float prev_error     = 0.f;
-
-            control_signal = compute_pid(
-                *(float *)pvParameters, speed_right, &integral, &prev_error);
-
-            static float new_pwm = START_SPEED;
-
-            if (new_pwm + control_signal > MAX_SPEED)
-            {
-                new_pwm = MAX_SPEED;
-            }
-            else if (new_pwm + control_signal < MIN_SPEED)
-            {
-                new_pwm = MIN_SPEED;
-            }
-            else
-            {
-                new_pwm = new_pwm + control_signal;
-            }
-
-            printf("control signal: %f\n", control_signal);
-            printf("new pwm: %f\n\n", new_pwm);
-
-            set_wheel_speed(new_pwm, 1u);
         }
+        else
+        {
+            curr_time_right = time_us_64();
+            printf("right speed: 0 cm/s\n");
+        }
+
+        static float control_signal = 0.f;
+        static float integral       = 0.f;
+        static float prev_error     = 0.f;
+
+        control_signal = compute_pid(
+            *(float *)pvParameters, speed_right, &integral, &prev_error);
+
+        static float new_pwm = START_SPEED;
+
+        if (new_pwm + control_signal > MAX_SPEED)
+        {
+            new_pwm = MAX_SPEED;
+        }
+        else if (new_pwm + control_signal < MIN_SPEED)
+        {
+            new_pwm = MIN_SPEED;
+        }
+        else
+        {
+            new_pwm = new_pwm + control_signal;
+        }
+
+        printf("control signal: %f\n", control_signal);
+        printf("new pwm: %f\n\n", new_pwm);
+
+        set_wheel_speed(new_pwm, 1u);
     }
 }
