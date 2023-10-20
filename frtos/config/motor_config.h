@@ -32,4 +32,18 @@
 #define MAX_SPEED                   4900U
 #define MIN_SPEED                   0U    // To be changed
 
+/*!
+ * @brief Structure for the motor speed
+ * @param side The side of the motor, 0 for left, 1 for right
+ * @param target_speed The target speed of the motor in cm/s
+ * @param pwm_level The current pwm level of the motor, in range [0, 5000]
+ */
+typedef struct {
+    float               target_speed;
+    uint16_t            pwm_level;
+    SemaphoreHandle_t * sem;
+    uint              * p_slice_num;
+    uint                channel;
+} motor_speed_t;
+
 #endif /* MOTOR_CONFIG_H */
