@@ -1,6 +1,6 @@
 include(FreeRTOS_Kernel_import.cmake)
 
-add_subdirectory(wheel)
+add_subdirectory(motor)
 add_subdirectory(line_sensor)
 
 add_executable(rtos_car rtos_car.c)
@@ -13,8 +13,8 @@ target_compile_definitions(rtos_car PRIVATE
         PING_USE_SOCKETS=1
 )
 target_include_directories(rtos_car PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
-        ${CMAKE_CURRENT_LIST_DIR}/wheel
+        ${CMAKE_CURRENT_LIST_DIR}/config
+        ${CMAKE_CURRENT_LIST_DIR}/motor
         ${CMAKE_CURRENT_LIST_DIR}/line_sensor
 )
 target_link_libraries(rtos_car

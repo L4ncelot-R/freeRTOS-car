@@ -1,16 +1,4 @@
-/**
- * @brief Program to read onboard temperature sensor and print out the average
- */
 
-#include <stdio.h>
-
-// pico sdk libraries
-#include "pico/cyw43_arch.h"
-#include "pico/stdlib.h"
-
-// FreeRTOS libraries
-#include "FreeRTOS.h"
-#include "task.h"
 
 #include "motor_speed.h"
 #include "motor_direction.h"
@@ -61,13 +49,16 @@ main (void)
 {
     stdio_usb_init();
 
-    motor_init();
+    sleep_ms(2000);
+    printf("Test started!\n");
 
+    motor_init();
     set_wheel_direction(DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD);
+    set_wheel_speed(START_SPEED, 0u);
 
     launch();
 
+    // for(;;);
+
     return (0);
 }
-
-/*** end of file ***/
