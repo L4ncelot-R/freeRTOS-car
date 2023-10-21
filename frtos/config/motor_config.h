@@ -43,8 +43,8 @@ typedef struct {
     float               target_speed_cms;
     float               current_speed_cms;
     uint16_t            pwm_level;
-    SemaphoreHandle_t * p_sem;
-    uint              * p_slice_num;
+    SemaphoreHandle_t   sem;
+    uint                slice_num;
     uint                pwm_channel;
 } motor_speed_t;
 

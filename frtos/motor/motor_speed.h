@@ -17,7 +17,7 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_wheel_speed_sem_left,
+        xSemaphoreGiveFromISR(g_motor_speed_left.sem,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
@@ -27,7 +27,7 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_wheel_speed_sem_right,
+        xSemaphoreGiveFromISR(g_motor_speed_right.sem,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
@@ -51,7 +51,7 @@ monitor_wheel_speed_task(void *pvParameters)
 
     for (;;)
     {
-        if (xSemaphoreTake(*p_motor_speed->p_sem, pdMS_TO_TICKS(100))
+        if (xSemaphoreTake(p_motor_speed->sem, pdMS_TO_TICKS(100))
             == pdTRUE)
         {
             curr_time    = time_us_64();
