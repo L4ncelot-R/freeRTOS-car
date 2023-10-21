@@ -2,6 +2,7 @@
 
 #include "motor_speed.h"
 #include "motor_direction.h"
+#include "motor_pid.h"
 
 #define WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
 
@@ -10,13 +11,18 @@ test_speed_change_task(void *p_param)
 {
     for (;;)
     {
+        g_motor_speed_left.target_speed_cms  = 50.0f;
+        g_motor_speed_right.target_speed_cms = 50.0f;
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
         g_motor_speed_left.target_speed_cms  = 20.0f;
         g_motor_speed_right.target_speed_cms = 20.0f;
-        vTaskDelay(pdMS_TO_TICKS(10000));
+        vTaskDelay(pdMS_TO_TICKS(5000));
 
-        g_motor_speed_left.target_speed_cms  = 40.0f;
-        g_motor_speed_right.target_speed_cms = 40.0f;
-        vTaskDelay(pdMS_TO_TICKS(10000));
+        g_motor_speed_left.target_speed_cms  = 0.0f;
+        g_motor_speed_right.target_speed_cms = 0.0f;
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
     }
 }
 
@@ -33,6 +39,8 @@ launch()
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 
+    // Left wheel
+    //
 //    TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
 //    xTaskCreate(monitor_wheel_speed_task,
 //                "monitor_left_wheel_speed_task",
@@ -41,6 +49,16 @@ launch()
 //                WHEEL_SPEED_PRIO,
 //                &h_monitor_left_wheel_speed_task_handle);
 
+//    TaskHandle_t h_motor_pid_left_task_handle = NULL;
+//    xTaskCreate(motor_pid_task,
+//                "motor_pid_task",
+//                configMINIMAL_STACK_SIZE,
+//                (void *)&g_motor_speed_left,
+//                WHEEL_SPEED_PRIO,
+//                &h_motor_pid_left_task_handle);
+
+    // Right wheel
+    //
     TaskHandle_t h_monitor_right_wheel_speed_task_handle = NULL;
     xTaskCreate(monitor_wheel_speed_task,
                 "monitor_wheel_speed_task",
@@ -49,6 +67,16 @@ launch()
                 WHEEL_SPEED_PRIO,
                 &h_monitor_right_wheel_speed_task_handle);
 
+    TaskHandle_t h_motor_pid_right_task_handle = NULL;
+    xTaskCreate(motor_pid_task,
+                "motor_pid_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)&g_motor_speed_right,
+                WHEEL_SPEED_PRIO,
+                &h_motor_pid_right_task_handle);
+
+    // Test speed change
+    //
     TaskHandle_t h_test_speed_change_task_handle = NULL;
     xTaskCreate(test_speed_change_task,
                 "test_speed_change_task",

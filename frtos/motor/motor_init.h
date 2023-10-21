@@ -27,15 +27,15 @@ SemaphoreHandle_t g_wheel_speed_sem_right = NULL;
 
 motor_speed_t g_motor_speed_left = { .target_speed_cms = 0.0f,
                                      .pwm_level        = 2500u,
-                                     .p_sem       = &g_wheel_speed_sem_left,
-                                     .p_slice_num = &g_slice_num_left,
-                                     .pwm_channel = PWM_CHAN_A };
+                                     .p_sem            = &g_wheel_speed_sem_left,
+                                     .p_slice_num      = &g_slice_num_left,
+                                     .pwm_channel      = PWM_CHAN_A };
 
 motor_speed_t g_motor_speed_right = { .target_speed_cms = 0.0f,
                                       .pwm_level        = 2500u,
-                                      .p_sem       = &g_wheel_speed_sem_right,
-                                      .p_slice_num = &g_slice_num_right,
-                                      .pwm_channel = PWM_CHAN_B };
+                                      .p_sem            = &g_wheel_speed_sem_right,
+                                      .p_slice_num      = &g_slice_num_right,
+                                      .pwm_channel      = PWM_CHAN_B };
 
 void
 motor_init(void)

@@ -25,8 +25,8 @@
 #define PWM_WRAP                    5000U
 
 #define PID_KP                      3.f
-#define PID_KI                      0.01f
-#define PID_KD                      0.05f
+#define PID_KI                      0.01 // 0.01f
+#define PID_KD                      0.05f // 0.05f
 
 #define MAX_SPEED                   4900U
 #define MIN_SPEED                   0U    // To be changed
@@ -41,6 +41,7 @@
  */
 typedef struct {
     float               target_speed_cms;
+    float               current_speed_cms;
     uint16_t            pwm_level;
     SemaphoreHandle_t * p_sem;
     uint              * p_slice_num;
