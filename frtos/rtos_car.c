@@ -15,9 +15,6 @@
 #include "motor_speed.h"
 #include "motor_direction.h"
 
-#define READ_LEFT_WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
-#define READ_RIGHT_WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
-
 void
 launch()
 {

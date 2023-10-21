@@ -3,8 +3,22 @@
 #include "motor_speed.h"
 #include "motor_direction.h"
 
-#define READ_LEFT_WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
-#define READ_RIGHT_WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
+#define WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
+
+void
+test_speed_change_task(void *p_param)
+{
+    for (;;)
+    {
+        g_motor_speed_left.target_speed_cms  = 20.0f;
+        g_motor_speed_right.target_speed_cms = 20.0f;
+        vTaskDelay(pdMS_TO_TICKS(10000));
+
+        g_motor_speed_left.target_speed_cms  = 40.0f;
+        g_motor_speed_right.target_speed_cms = 40.0f;
+        vTaskDelay(pdMS_TO_TICKS(10000));
+    }
+}
 
 void
 launch()
@@ -19,47 +33,35 @@ launch()
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 
-    static volatile motor_speed_t * p_motor_speed_left = NULL;
-    static volatile motor_speed_t motor_speed_left = {
-        .target_speed = 40.0f,
-        .pwm_level = 0u,
-        .sem = &g_wheel_speed_sem_left,
-        .p_slice_num = &g_slice_num_left,
-        .channel = PWM_CHAN_A
-    };
-    p_motor_speed_left = &motor_speed_left;
-
-    static volatile motor_speed_t * p_motor_speed_right = NULL;
-    static volatile motor_speed_t motor_speed_right = {
-        .target_speed = 20.0f,
-        .pwm_level = 0u,
-        .sem = &g_wheel_speed_sem_right,
-        .p_slice_num = &g_slice_num_right,
-        .channel = PWM_CHAN_B
-    };
-    p_motor_speed_right = &motor_speed_right;
-
-    TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
-    xTaskCreate(monitor_wheel_speed_task,
-                "monitor_left_wheel_speed_task",
-                configMINIMAL_STACK_SIZE,
-                (void *) p_motor_speed_left,
-                READ_LEFT_WHEEL_SPEED_PRIO,
-                &h_monitor_left_wheel_speed_task_handle);
+//    TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
+//    xTaskCreate(monitor_wheel_speed_task,
+//                "monitor_left_wheel_speed_task",
+//                configMINIMAL_STACK_SIZE,
+//                (void *)&g_motor_speed_left,
+//                WHEEL_SPEED_PRIO,
+//                &h_monitor_left_wheel_speed_task_handle);
 
     TaskHandle_t h_monitor_right_wheel_speed_task_handle = NULL;
     xTaskCreate(monitor_wheel_speed_task,
                 "monitor_wheel_speed_task",
                 configMINIMAL_STACK_SIZE,
-                (void *)p_motor_speed_right,
-                READ_RIGHT_WHEEL_SPEED_PRIO,
+                (void *)&g_motor_speed_right,
+                WHEEL_SPEED_PRIO,
                 &h_monitor_right_wheel_speed_task_handle);
+
+    TaskHandle_t h_test_speed_change_task_handle = NULL;
+    xTaskCreate(test_speed_change_task,
+                "test_speed_change_task",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                WHEEL_SPEED_PRIO,
+                &h_test_speed_change_task_handle);
 
     vTaskStartScheduler();
 }
 
 int
-main (void)
+main(void)
 {
     stdio_usb_init();
 

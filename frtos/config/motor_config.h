@@ -24,26 +24,27 @@
 #define PWM_CLK_DIV                 250.f
 #define PWM_WRAP                    5000U
 
-#define PID_KP                      10.f
-#define PID_KI                      0.0f
-#define PID_KD                      0.0f
+#define PID_KP                      3.f
+#define PID_KI                      0.01f
+#define PID_KD                      0.05f
 
-#define START_SPEED                 0U
 #define MAX_SPEED                   4900U
 #define MIN_SPEED                   0U    // To be changed
 
 /*!
  * @brief Structure for the motor speed
- * @param side The side of the motor, 0 for left, 1 for right
- * @param target_speed The target speed of the motor in cm/s
- * @param pwm_level The current pwm level of the motor, in range [0, 5000]
+ * @param target_speed The target speed of the wheel, in cm/s
+ * @param pwm_level The pwm level of the wheel, from 0 to 5000
+ * @param sem The semaphore for the wheel
+ * @param p_slice_num The pointer to the slice number of the wheel
+ * @param channel The pwm channel of the wheel, left A or right B
  */
 typedef struct {
-    float               target_speed;
+    float               target_speed_cms;
     uint16_t            pwm_level;
-    SemaphoreHandle_t * sem;
+    SemaphoreHandle_t * p_sem;
     uint              * p_slice_num;
-    uint                channel;
+    uint                pwm_channel;
 } motor_speed_t;
 
 #endif /* MOTOR_CONFIG_H */

@@ -45,10 +45,10 @@ h_wheel_sensor_isr_handler(void)
  * @return The control signal
  */
 float
-compute_pid(const volatile float * target_speed,
-            const float * current_speed,
-            float * integral,
-            float * prev_error)
+compute_pid(const volatile float *target_speed,
+            const float          *current_speed,
+            float                *integral,
+            float                *prev_error)
 {
     float error = *target_speed - *current_speed;
     *integral += error;
@@ -72,8 +72,7 @@ void
 monitor_wheel_speed_task(void *pvParameters)
 {
     volatile motor_speed_t *p_motor_speed = NULL;
-    p_motor_speed = (motor_speed_t *)pvParameters;
-    SemaphoreHandle_t *p_sem = p_motor_speed->sem;
+    p_motor_speed                         = (motor_speed_t *)pvParameters;
 
     float speed = 0.f;
 
@@ -89,8 +88,8 @@ monitor_wheel_speed_task(void *pvParameters)
 
     for (;;)
     {
-        if (xSemaphoreTake(*p_sem, pdMS_TO_TICKS(1000)) ==
-            pdTRUE)
+        if (xSemaphoreTake(*p_motor_speed->p_sem, pdMS_TO_TICKS(100))
+            == pdTRUE)
         {
             curr_time    = time_us_64();
             elapsed_time = curr_time - prev_time;
@@ -106,13 +105,12 @@ monitor_wheel_speed_task(void *pvParameters)
         }
         else
         {
-            printf("speed: 0 cm/s\n");
+            speed = 0.f;
+            printf("stopped\n");
         }
 
-        control_signal = compute_pid(&(p_motor_speed->target_speed),
-                                     &speed,
-                                     &integral,
-                                     &prev_error);
+        control_signal = compute_pid(
+            &(p_motor_speed->target_speed_cms), &speed, &integral, &prev_error);
 
         if (new_pwm + control_signal > MAX_SPEED)
         {
@@ -131,7 +129,7 @@ monitor_wheel_speed_task(void *pvParameters)
         printf("new pwm: %f\n\n", new_pwm);
 
         pwm_set_chan_level(*p_motor_speed->p_slice_num,
-                           p_motor_speed->channel,
-                           (int16_t) new_pwm);
+                           p_motor_speed->pwm_channel,
+                           (int16_t)new_pwm);
     }
 }
