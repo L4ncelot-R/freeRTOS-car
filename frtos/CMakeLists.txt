@@ -2,6 +2,7 @@ include(FreeRTOS_Kernel_import.cmake)
 
 add_subdirectory(motor)
 add_subdirectory(line_sensor)
+add_subdirectory(car)
 
 add_executable(rtos_car rtos_car.c)
 
