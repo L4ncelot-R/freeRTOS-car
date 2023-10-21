@@ -10,46 +10,25 @@
 #include "motor_init.h"
 
 /*!
- * @brief Set the speed of the wheels; can use bitwise OR to set both
- * @param speed in range [0, 5000]
- * @param side 0 for left, 1 for right
+ * @brief Interrupt handler for the wheel sensor
  */
 void
-set_wheel_speed(float speed, uint8_t side)
-{
-    if (side == 0U)
-    {
-        pwm_set_chan_level(g_slice_num_left, PWM_CHAN_A, (uint16_t)speed);
-    }
-    else
-    {
-        pwm_set_chan_level(g_slice_num_right, PWM_CHAN_B, (uint16_t)speed);
-    }
-}
-
-void
-h_left_wheel_sensor_isr_handler(void)
+h_wheel_sensor_isr_handler(void)
 {
     if (gpio_get_irq_event_mask(SPEED_PIN_LEFT) & GPIO_IRQ_EDGE_FALL)
     {
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
-        // printf("left motor sensor isr\n");
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(g_wheel_speed_sem_left,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
-}
 
-void
-h_right_wheel_sensor_isr_handler(void)
-{
     if (gpio_get_irq_event_mask(SPEED_PIN_RIGHT) & GPIO_IRQ_EDGE_FALL)
     {
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
-        // printf("right motor sensor isr\n");
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         xSemaphoreGiveFromISR(g_wheel_speed_sem_right,
                               &xHigherPriorityTaskWoken);
@@ -57,13 +36,21 @@ h_right_wheel_sensor_isr_handler(void)
     }
 }
 
+/*!
+ * @brief Compute the control signal using PID controller
+ * @param target_speed The target speed of the wheel
+ * @param current_speed The current speed of the wheel
+ * @param integral The integral term of the PID controller
+ * @param prev_error The previous error of the PID controller
+ * @return The control signal
+ */
 float
-compute_pid(float  target_speed,
-            float  current_speed,
-            float *integral,
-            float *prev_error)
+compute_pid(const volatile float *target_speed,
+            const float          *current_speed,
+            float                *integral,
+            float                *prev_error)
 {
-    float error = target_speed - current_speed;
+    float error = *target_speed - *current_speed;
     *integral += error;
 
     float derivative = error - *prev_error;
@@ -76,121 +63,73 @@ compute_pid(float  target_speed,
     return control_signal;
 }
 
+/*!
+ * @brief Task to monitor and control the speed of the wheel
+ * @param pvParameters motor_speed_t struct pointer
+ * @see motor_speed_t
+ */
 void
-monitor_left_wheel_speed_task(void *pvParameters)
+monitor_wheel_speed_task(void *pvParameters)
 {
-    //  static float * target_speed = NULL;
-    //  *target_speed = * (float *) pvParameters;
+    volatile motor_speed_t *p_motor_speed = NULL;
+    p_motor_speed                         = (motor_speed_t *)pvParameters;
+
+    float speed = 0.f;
+
+    float new_pwm = p_motor_speed->pwm_level;
+
+    uint64_t curr_time    = 0u;
+    uint64_t prev_time    = 0u;
+    uint64_t elapsed_time = 0u;
+
+    float control_signal = 0.f;
+    float integral       = 0.f;
+    float prev_error     = 0.f;
 
     for (;;)
     {
-        if (xSemaphoreTake(g_wheel_speed_sem_left, portMAX_DELAY) == pdTRUE)
+        if (xSemaphoreTake(*p_motor_speed->p_sem, pdMS_TO_TICKS(100))
+            == pdTRUE)
         {
-            static uint64_t curr_time_left = 0u;
-            curr_time_left                 = time_us_64();
+            curr_time    = time_us_64();
+            elapsed_time = curr_time - prev_time;
+            prev_time    = curr_time;
 
-            static uint64_t prev_time_left    = 0u;
-            static uint64_t elapsed_time_left = 1u; // to avoid division by 0
-
-            elapsed_time_left = curr_time_left - prev_time_left;
-
-            prev_time_left = curr_time_left;
-
-            static float speed_left = 0.f;
             // speed in cm/s; speed = distance / time
             // distance = circumference / 20
             // circumference = 2 * pi * 3.25 cm = 20.4203522483 cm
             // distance = 20.4203522483 cm / 20 = 1.02101761242 cm
-            speed_left
-                = (float)(1.02101761242f / (elapsed_time_left / 1000000.f));
+            speed = (float)(1.02101761242f / (elapsed_time / 1000000.f));
 
-            printf("left speed: %f cm/s\n", speed_left);
-
-            static float control_signal = 0.f;
-            static float integral       = 0.f;
-            static float prev_error     = 0.f;
-
-            control_signal = compute_pid(
-                *(float *)pvParameters, speed_left, &integral, &prev_error);
-
-            static float new_pwm = START_SPEED;
-
-            if (new_pwm + control_signal > MAX_SPEED)
-            {
-                new_pwm = MAX_SPEED;
-            }
-            else if (new_pwm + control_signal < MIN_SPEED)
-            {
-                new_pwm = MIN_SPEED;
-            }
-            else
-            {
-                new_pwm = new_pwm + control_signal;
-            }
-
-            printf("control signal: %f\n", control_signal);
-            printf("new pwm: %f\n\n", new_pwm);
-
-            set_wheel_speed(new_pwm, 0u);
+            printf("speed: %f cm/s\n", speed);
         }
-    }
-}
-
-void
-monitor_right_wheel_speed_task(void *pvParameters)
-{
-    // volatile float * target_speed = (float *) pvParameters;
-
-    //  static volatile float * target_speed = NULL;
-    //  target_speed = (float *) pvParameters;
-
-    for (;;)
-    {
-        if (xSemaphoreTake(g_wheel_speed_sem_right, portMAX_DELAY) == pdTRUE)
+        else
         {
-            static uint64_t curr_time_right = 0u;
-            curr_time_right                 = time_us_64();
-
-            static uint64_t prev_time_right    = 0u;
-            static uint64_t elapsed_time_right = 1u; // to avoid division by 0
-
-            elapsed_time_right = curr_time_right - prev_time_right;
-
-            prev_time_right = curr_time_right;
-
-            static float speed_right = 0.f;
-
-            speed_right
-                = (float)(1.02101761242f / (elapsed_time_right / 1000000.f));
-
-            printf("right speed: %f cm/s\n", speed_right);
-
-            static float control_signal = 0.f;
-            static float integral       = 0.f;
-            static float prev_error     = 0.f;
-
-            control_signal = compute_pid(
-                *(float *)pvParameters, speed_right, &integral, &prev_error);
-
-            static float new_pwm = START_SPEED;
-
-            if (new_pwm + control_signal > MAX_SPEED)
-            {
-                new_pwm = MAX_SPEED;
-            }
-            else if (new_pwm + control_signal < MIN_SPEED)
-            {
-                new_pwm = MIN_SPEED;
-            }
-            else
-            {
-                new_pwm = new_pwm + control_signal;
-            }
-
-            printf("control signal: %f\n", control_signal);
-            printf("new pwm: %f\n\n", new_pwm);
-
-            set_wheel_speed(new_pwm, 1u);
+            speed = 0.f;
+            printf("stopped\n");
         }
+
+        control_signal = compute_pid(
+            &(p_motor_speed->target_speed_cms), &speed, &integral, &prev_error);
+
+        if (new_pwm + control_signal > MAX_SPEED)
+        {
+            new_pwm = MAX_SPEED;
+        }
+        else if (new_pwm + control_signal < MIN_SPEED)
+        {
+            new_pwm = MIN_SPEED;
+        }
+        else
+        {
+            new_pwm = new_pwm + control_signal;
+        }
+
+        printf("control signal: %f\n", control_signal);
+        printf("new pwm: %f\n\n", new_pwm);
+
+        pwm_set_chan_level(*p_motor_speed->p_slice_num,
+                           p_motor_speed->pwm_channel,
+                           (int16_t)new_pwm);
     }
 }
