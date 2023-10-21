@@ -1,37 +1,14 @@
-/**
- * @brief Program to read onboard temperature sensor and print out the average
- */
-
-#include <stdio.h>
-
-// pico sdk libraries
-#include "pico/cyw43_arch.h"
-#include "pico/stdlib.h"
-
-// FreeRTOS libraries
-#include "FreeRTOS.h"
-#include "task.h"
-
-#include "motor_speed.h"
-#include "motor_direction.h"
 
 #include "line_sensor.h"
-
-#define READ_LEFT_WHEEL_SPEED_PRIO      (tskIDLE_PRIORITY + 1UL)
-#define READ_RIGHT_WHEEL_SPEED_PRIO     (tskIDLE_PRIORITY + 1UL)
 
 #define READ_LEFT_SENSOR_PRIO           (tskIDLE_PRIORITY + 2UL)
 #define READ_RIGHT_SENSOR_PRIO          (tskIDLE_PRIORITY + 2UL)
 
 #define DIRECTION_TASK_PRIORITY         (tskIDLE_PRIORITY + 3UL)
 
-/* Common Car State Structure (TODO: TBC)*/
-//static car_state_t g_car_state;
-
 void
 launch()
 {
-
     struct repeating_timer g_left_sensor_timer;
     add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
                            h_left_sensor_timer_handler,
@@ -76,17 +53,13 @@ main (void)
 {
     stdio_usb_init();
 
-    motor_init();
-
-    set_wheel_direction(DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD);
+    sleep_ms(2000);
+    printf("Test started!\n");
 
     line_sensor_setup();
+    initialize_car_state();
 
-    initialize_car_state(); // TODO: Could be common functionality, To confirm
-                            // during Integration
     launch();
 
     return (0);
 }
-
-/*** end of file ***/
