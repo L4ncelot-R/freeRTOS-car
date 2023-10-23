@@ -6,7 +6,10 @@
 #define TRIG_PIN 0
 #define ECHO_PIN 1
 
-void init_ultrasonic(void)
+int16_t counter = 0;
+
+void
+init_ultrasonic(void)
 {
     // Set up the echo pin
     gpio_init(ECHO_PIN);
@@ -17,11 +20,34 @@ void init_ultrasonic(void)
     gpio_set_dir(TRIG_PIN, GPIO_OUT);
 }
 
-void distance_task(__unused void *params)
+float
+KalmanFilter(float U)
+{
+    static float R = 10;    // noise convariance can be 10, higher better smooth
+    static float H = 1;     // Measurement Map scalar
+    static float Q = 10;    // initial estimated convariance
+    static float P = 0;     // initial error covariance
+    static float U_hat = 0; // initial estimated state
+    static float K     = 0; // initial Kalman gain
+
+    // Predict
+    //
+    K     = P * H / (H * P * H + R);     // Update Kalman gain
+    U_hat = U_hat + K * (U - H * U_hat); // Update estimated state
+
+    // Update error covariance
+    //
+    P = (1 - K * H) * P + Q;
+
+    return U_hat;
+}
+
+void
+distance_task(__unused void *params)
 {
     while (true)
     {
-        vTaskDelay(500);
+        vTaskDelay(1000);
 
         // Trigger the ultrasonic sensor
         gpio_put(TRIG_PIN, 1);
@@ -42,7 +68,9 @@ void distance_task(__unused void *params)
         uint32_t pulse_duration = end_time - start_time;
         float distance = pulse_duration * 0.017; // Speed of sound at ~343 m/s
 
-        printf("Distance: %.2f cm\n", distance);
+        // printf("Distance: %.2f cm\n", distance);
+        // printf("Kalman Filtered Distance: %.2f cm\n", KalmanFilter(distance));
+        printf("%d,%.2f,%.2f\n", counter++, distance, KalmanFilter(distance));
 
         // If gonna bang wall
         //
@@ -55,21 +83,28 @@ void distance_task(__unused void *params)
     }
 }
 
-
-void vLaunch(void)
+void
+vLaunch(void)
 {
     TaskHandle_t disttask;
-    xTaskCreate(distance_task, "TestDistThread", configMINIMAL_STACK_SIZE, NULL, 1, &disttask);
+    xTaskCreate(distance_task,
+                "TestDistThread",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                1,
+                &disttask);
 
     // Start the tasks and timer running.
     //
     vTaskStartScheduler();
 }
 
-int main(void)
+int
+main(void)
 {
     stdio_init_all();
     init_ultrasonic();
+    sleep_ms(3000);
     vLaunch();
 
     return 0;
