@@ -17,6 +17,8 @@
 
 #include "line_sensor.h"
 
+#include "ultrasonic_sensor.h"
+
 #define READ_LEFT_WHEEL_SPEED_PRIO      (tskIDLE_PRIORITY + 1UL)
 #define READ_RIGHT_WHEEL_SPEED_PRIO     (tskIDLE_PRIORITY + 1UL)
 
@@ -24,6 +26,8 @@
 #define READ_RIGHT_SENSOR_PRIO          (tskIDLE_PRIORITY + 2UL)
 
 #define DIRECTION_TASK_PRIORITY         (tskIDLE_PRIORITY + 3UL)
+
+#define DISTANCE_TASK_PRIORITY          (tskIDLE_PRIORITY + 4UL)
 
 /* Common Car State Structure (TODO: TBC)*/
 //static car_state_t g_car_state;
@@ -67,6 +71,14 @@ launch()
                 NULL,
                 DIRECTION_TASK_PRIORITY,
                 &h_monitor_direction_task);
+
+    TaskHandle_t h_monitor_distance_task;
+    xTaskCreate(distance_task, 
+                "Monitor Distance Task", 
+                configMINIMAL_STACK_SIZE, 
+                NULL, 
+                DISTANCE_TASK_PRIORITY, 
+                &h_monitor_distance_task);
 
     vTaskStartScheduler();
 }
