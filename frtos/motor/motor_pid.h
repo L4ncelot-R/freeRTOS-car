@@ -60,8 +60,8 @@ motor_pid_task(void *p_param)
             p_motor_speed->pwm_level = p_motor_speed->pwm_level + control_signal;
         }
 
-        printf("control signal: %f\n", control_signal);
-        printf("new pwm: %hu\n\n", p_motor_speed->pwm_level);
+        // printf("control signal: %f\n", control_signal);
+        // printf("new pwm: %hu\n\n", p_motor_speed->pwm_level);
 
         pwm_set_chan_level(p_motor_speed->slice_num,
                            p_motor_speed->pwm_channel,

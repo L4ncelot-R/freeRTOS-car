@@ -24,9 +24,16 @@
 #define PWM_CLK_DIV                 250.f
 #define PWM_WRAP                    5000U
 
-#define PID_KP                      3.f
-#define PID_KI                      0.01 // 0.01f
-#define PID_KD                      0.05f // 0.05f
+/*
+ * ultimate gain Ku about 14, ultimate period Tu about 8 * 50 = 400ms
+ * Ku = 14, Tu = 400ms,
+ * Kp = 0.6 * Ku = 8.4
+ * Ki = Kp / Tu = 0.021
+ * Kd = Kp * Tu / 8 = 42
+ */
+#define PID_KP                      8.4f
+#define PID_KI                      0.021f // 0.005f
+#define PID_KD                      42.f // 0.05f
 
 #define MAX_SPEED                   4900U
 #define MIN_SPEED                   0U    // To be changed
@@ -46,6 +53,7 @@ typedef struct {
     SemaphoreHandle_t   sem;
     uint                slice_num;
     uint                pwm_channel;
+    float               distance;
 } motor_speed_t;
 
 #endif /* MOTOR_CONFIG_H */

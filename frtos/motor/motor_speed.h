@@ -66,12 +66,16 @@ monitor_wheel_speed_task(void *pvParameters)
                                                        (elapsed_time /
                                                         1000000.f));
 
-            printf("speed: %f cm/s\n", p_motor_speed->current_speed_cms);
+            p_motor_speed->distance += 1.02101761242f;
+
+            // printf("speed: %f cm/s\n", p_motor_speed->current_speed_cms);
         }
         else
         {
             p_motor_speed->current_speed_cms = 0.f;
-            printf("stopped\n");
+            // printf("stopped\n");
         }
+
+        // printf("distance: %f cm\n", p_motor_speed->distance);
     }
 }
