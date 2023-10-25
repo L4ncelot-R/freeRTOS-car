@@ -7,6 +7,7 @@
 
 #ifndef MAGNETOMETER_READ_H
 #define MAGNETOMETER_READ_H
+
 #include "magnetometer_init.h"
 
 /**
@@ -76,6 +77,34 @@ read_magnetometer(int16_t magnetometer[3]) {
     magnetometer[1] = (int16_t) (buffer[2] << 8 | buffer[3]); //yMag
 
     magnetometer[2] = (int16_t) (buffer[4] << 8 | buffer[5]); //zMag
+}
+
+/**
+ * @brief Read Temperature Data in Degrees Celsius
+ * @param temperature  Temperature Data in Degrees Celsius
+ */
+static inline void
+read_temperature(int16_t temperature[1]) {
+    uint8_t buffer[2];
+
+    buffer[0] = read_data(MAG_ADDR, LSM303_TEMP_OUT_H_M);
+    buffer[1] = read_data(MAG_ADDR, LSM303_TEMP_OUT_L_M);
+
+    /**
+     * Normalize temperature; it is big-endian, fixed-point
+     * 9 bits signed integer, 3 bits fractional part, 4 bits zeros
+     * and is relative to 20 degrees Celsius
+     * Source: https://electronics.stackexchange.com/a/356964
+     */
+
+    int16_t raw_temperature =
+            (20 << 3) + (((int16_t) buffer[0] << 8 | buffer[1]) >> 4);
+
+    // Convert the raw temperature data to degrees Celsius
+    float temperature_celsius = (float) raw_temperature / 8.0;
+
+    // Store the result in the temperature array
+    temperature[0] = (int16_t) temperature_celsius;
 }
 
 #endif

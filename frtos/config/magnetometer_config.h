@@ -7,7 +7,7 @@
 
 #define DIRECTION_READ_DELAY                    ( 100 )
 
-#define ALPHA                                   ( 0.98f ) // Complementary
+#define ALPHA                                   ( 0.01f ) // Complementary
                                                           // Filter Constant
 
 /**
