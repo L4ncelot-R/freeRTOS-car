@@ -20,10 +20,12 @@
 #include "motor_config.h"
 
 motor_speed_t g_motor_speed_left  = { .pwm_level   = 2500u,
-                                      .pwm_channel = PWM_CHAN_A };
+                                      .pwm_channel = PWM_CHAN_A,
+                                      .distance = 0.0f,};
 
 motor_speed_t g_motor_speed_right = { .pwm_level   = 2500u,
-                                      .pwm_channel = PWM_CHAN_B };
+                                      .pwm_channel = PWM_CHAN_B,
+                                      .distance = 0.0f,};
 
 void
 motor_init(void)

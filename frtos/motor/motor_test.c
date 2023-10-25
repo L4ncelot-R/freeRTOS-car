@@ -11,13 +11,13 @@ test_speed_change_task(void *p_param)
 {
     for (;;)
     {
-        g_motor_speed_left.target_speed_cms  = 50.0f;
-        g_motor_speed_right.target_speed_cms = 50.0f;
+        g_motor_speed_left.target_speed_cms  = 15.0f;
+        g_motor_speed_right.target_speed_cms = 15.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
-        g_motor_speed_left.target_speed_cms  = 20.0f;
-        g_motor_speed_right.target_speed_cms = 20.0f;
-        vTaskDelay(pdMS_TO_TICKS(5000));
+//        g_motor_speed_left.target_speed_cms  = 20.0f;
+//        g_motor_speed_right.target_speed_cms = 20.0f;
+//        vTaskDelay(pdMS_TO_TICKS(5000));
 
         g_motor_speed_left.target_speed_cms  = 0.0f;
         g_motor_speed_right.target_speed_cms = 0.0f;
