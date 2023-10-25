@@ -1,5 +1,20 @@
+/**
+ * @file magnetometer_read.h
+ * @author Woon Jun Wei
+ * @brief This file contains the functions to read the data
+ * from the LSM303DLHC accelerometer and magnetometer sensor
+ */
+
+#ifndef MAGNETOMETER_READ_H
+#define MAGNETOMETER_READ_H
 #include "magnetometer_init.h"
 
+/**
+ * @brief Read Data with I2C, given the address and register
+ * @param addr  Address of the device
+ * @param reg   Register to read from
+ * @return      1 piece of data read from the register
+ */
 static inline int
 read_data(uint8_t addr, uint8_t reg) {
     uint8_t data[1];
@@ -13,6 +28,10 @@ read_data(uint8_t addr, uint8_t reg) {
     return data[0];
 }
 
+/**
+ * @brief Read Accelerometer Data
+ * @param accelerometer   Accelerometer Data
+ */
 static inline void
 read_accelerometer(int16_t accelerometer[3]) {
     uint8_t buffer[6];
@@ -37,6 +56,10 @@ read_accelerometer(int16_t accelerometer[3]) {
 
 }
 
+/**
+ * @brief Read Magnetometer Data
+ * @param magnetometer  Magnetometer Data
+ */
 static inline void
 read_magnetometer(int16_t magnetometer[3]) {
     uint8_t buffer[6];
@@ -55,52 +78,4 @@ read_magnetometer(int16_t magnetometer[3]) {
     magnetometer[2] = (int16_t) (buffer[4] << 8 | buffer[5]); //zMag
 }
 
-/**
- * FreeRTOS Tasks
- */
-
-
-//void
-//monitor_magnetometer_task(__unused void *params) {
-//    for (;;)
-//    {
-//        if (xSemaphoreTake(g_magnetometer_sem, portMAX_DELAY) == pdTRUE)
-//        {
-////            printf("Magnetometer Task");
-//            int16_t magnetometer[3];
-//            read_magnetometer(magnetometer);
-//
-//            // Send to message buffer
-//            xMessageBufferSend(g_magnetometer_buffer,
-//                               &magnetometer,
-//                               sizeof(magnetometer),
-//                               0
-//            );
-//
-//            printf("Magnetometer: %d, %d, %d\n", magnetometer[0],
-//                   magnetometer[1], magnetometer[2]);
-//        }
-//    }
-//}
-
-//void
-//monitor_accelerometer_task(__unused void *params) {
-//    for (;;)
-//    {
-//        if (xSemaphoreTake(g_accelerometer_sem, portMAX_DELAY) == pdTRUE)
-//        {
-//            int16_t accelerometer[3];
-//            read_accelerometer(accelerometer);
-//
-//            // Send to message buffer
-//            xMessageBufferSend(g_accelerometer_buffer,
-//                               &accelerometer,
-//                               sizeof(accelerometer),
-//                               0
-//            );
-//
-//            printf("Accelerometer: %d, %d, %d\n", accelerometer[0],
-//                   accelerometer[1], accelerometer[2]);
-//        }
-//    }
-//}
+#endif
