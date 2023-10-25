@@ -7,6 +7,9 @@
 
 #define DIRECTION_READ_DELAY                    ( 100 )
 
+#define ALPHA                                   ( 0.98f ) // Complementary
+                                                          // Filter Constant
+
 /**
  * @brief The orientation of the car
  */

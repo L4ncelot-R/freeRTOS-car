@@ -10,7 +10,9 @@
  *          The roll, pitch and yaw are combined to calculate the direction
  *          of the car
  *
- *          The direction of the car is calculated using the complementary filter
+ *          The direction of the car is calculated using the complementary
+ *          filter
+ *
  *          The complementary filter is used to combine the accelerometer
  *          and magnetometer data to calculate the direction of the car
  *
@@ -26,7 +28,8 @@
  * @param acceleration Accelerometer Data
  * @return
  */
-float calculate_roll(int16_t acceleration[3]) {
+static inline float
+calculate_roll(int16_t acceleration[3]) {
     return atan2(acceleration[1], acceleration[2]) * (180.0 / M_PI);
 }
 
@@ -35,7 +38,8 @@ float calculate_roll(int16_t acceleration[3]) {
  * @param acceleration Accelerometer Data
  * @return
  */
-float calculate_pitch(int16_t acceleration[3]) {
+static inline float
+calculate_pitch(int16_t acceleration[3]) {
     return atan2(- acceleration[0], sqrt(acceleration[1] * acceleration[1] +
                                          acceleration[2] * acceleration[2])) *
            (180.0 / M_PI);
@@ -46,19 +50,20 @@ float calculate_pitch(int16_t acceleration[3]) {
  * @param magnetometer Magnetometer Data
  * @return
  */
-float calculate_yaw_magnetometer(int16_t magnetometer[3]) {
+static inline float
+calculate_yaw_magnetometer(int16_t magnetometer[3]) {
     return atan2(magnetometer[1], magnetometer[0]) * (180.0 / M_PI);
 }
 
 /**
  * @brief Complementary Filter for Yaw
- * @param alpha     Complementary Filter Constant
  * @param yaw_acc   Yaw calculated from Accelerometer Data
  * @param yaw_mag   Yaw calculated from Magnetometer Data
  * @return yaw      Yaw calculated from Complementary Filter
  */
-float calculate_yaw_complementary(float alpha, float yaw_acc, float yaw_mag) {
-    return alpha * yaw_acc + (1 - alpha) * yaw_mag;
+static inline float
+calculate_yaw_complementary(float yaw_acc, float yaw_mag) {
+    return ALPHA * yaw_acc + (1 - ALPHA) * yaw_mag;
 }
 
 /**
@@ -66,7 +71,8 @@ float calculate_yaw_complementary(float alpha, float yaw_acc, float yaw_mag) {
  * @param yaw   Yaw calculated from Complementary Filter
  * @return yaw  Yaw adjusted to be between 0 and 360 degrees
  */
-float adjust_yaw(float yaw) {
+static inline float
+adjust_yaw(float yaw) {
     return (yaw < 0) ? yaw + 360.0f : yaw;
 }
 
@@ -77,7 +83,8 @@ float adjust_yaw(float yaw) {
  * @param yaw   Yaw calculated from Complementary Filter
  * @return      Compass Direction
  */
-compass_direction_t calculate_compass_direction(float yaw) {
+static inline compass_direction_t
+calculate_compass_direction(float yaw) {
     int orientation = (int) ((yaw + 22.5) / 45.0) % 8; // 8 compass directions
     switch (orientation)
     {
@@ -109,8 +116,9 @@ compass_direction_t calculate_compass_direction(float yaw) {
  * @param yaw                   Yaw calculated from Complementary Filter
  * @param compass_direction     Compass Direction
  */
-void update_orientation_data(float roll, float pitch, float yaw,
-                             compass_direction_t compass_direction) {
+static inline void
+update_orientation_data(float roll, float pitch, float yaw,
+                        compass_direction_t compass_direction) {
     g_direction.roll = roll;
     g_direction.pitch = pitch;
     g_direction.yaw = yaw;
@@ -124,14 +132,14 @@ void update_orientation_data(float roll, float pitch, float yaw,
  * @param acceleration  Accelerometer Data
  * @param magnetometer  Magnetometer Data
  */
-static void read_direction(int16_t acceleration[3], int16_t magnetometer[3]) {
+static void
+read_direction(int16_t acceleration[3], int16_t magnetometer[3]) {
     float roll = calculate_roll(acceleration);
     float pitch = calculate_pitch(acceleration);
     float yaw_mag = calculate_yaw_magnetometer(magnetometer);
 
-    float alpha = 0.98;
     float yaw_acc = atan2(acceleration[1], acceleration[0]) * (180.0 / M_PI);
-    float yaw = calculate_yaw_complementary(alpha, yaw_acc, yaw_mag);
+    float yaw = calculate_yaw_complementary(yaw_acc, yaw_mag);
 
     yaw = adjust_yaw(yaw);
 
