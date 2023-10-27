@@ -11,17 +11,33 @@ test_speed_change_task(void *p_param)
 {
     for (;;)
     {
-        g_motor_speed_left.target_speed_cms  = 15.0f;
-        g_motor_speed_right.target_speed_cms = 15.0f;
+        g_motor_left.speed.target_speed_cms  = 30.0f;
+        g_motor_right.speed.target_speed_cms = 30.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
-//        g_motor_speed_left.target_speed_cms  = 20.0f;
-//        g_motor_speed_right.target_speed_cms = 20.0f;
-//        vTaskDelay(pdMS_TO_TICKS(5000));
-
-        g_motor_speed_left.target_speed_cms  = 0.0f;
-        g_motor_speed_right.target_speed_cms = 0.0f;
+        g_motor_left.speed.target_speed_cms  = 20.0f;
+        g_motor_right.speed.target_speed_cms = 20.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
+
+        g_motor_left.speed.target_speed_cms  = 0.0f;
+        g_motor_right.speed.target_speed_cms = 0.0f;
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        set_wheel_direction(DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_BACKWARD);
+
+        g_motor_left.speed.target_speed_cms  = 30.0f;
+        g_motor_right.speed.target_speed_cms = 30.0f;
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        g_motor_left.speed.target_speed_cms  = 20.0f;
+        g_motor_right.speed.target_speed_cms = 20.0f;
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        g_motor_left.speed.target_speed_cms  = 0.0f;
+        g_motor_right.speed.target_speed_cms = 0.0f;
+        vTaskDelay(pdMS_TO_TICKS(5000));
+
+        set_wheel_direction(DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD);
 
     }
 }
@@ -41,21 +57,21 @@ launch()
 
     // Left wheel
     //
-//    TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
-//    xTaskCreate(monitor_wheel_speed_task,
-//                "monitor_left_wheel_speed_task",
-//                configMINIMAL_STACK_SIZE,
-//                (void *)&g_motor_speed_left,
-//                WHEEL_SPEED_PRIO,
-//                &h_monitor_left_wheel_speed_task_handle);
+    TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
+    xTaskCreate(monitor_wheel_speed_task,
+                "monitor_left_wheel_speed_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)&g_motor_left,
+                WHEEL_SPEED_PRIO,
+                &h_monitor_left_wheel_speed_task_handle);
 
-//    TaskHandle_t h_motor_pid_left_task_handle = NULL;
-//    xTaskCreate(motor_pid_task,
-//                "motor_pid_task",
-//                configMINIMAL_STACK_SIZE,
-//                (void *)&g_motor_speed_left,
-//                WHEEL_SPEED_PRIO,
-//                &h_motor_pid_left_task_handle);
+    TaskHandle_t h_motor_pid_left_task_handle = NULL;
+    xTaskCreate(motor_pid_task,
+                "motor_pid_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)&g_motor_left,
+                WHEEL_SPEED_PRIO,
+                &h_motor_pid_left_task_handle);
 
     // Right wheel
     //
@@ -63,7 +79,7 @@ launch()
     xTaskCreate(monitor_wheel_speed_task,
                 "monitor_wheel_speed_task",
                 configMINIMAL_STACK_SIZE,
-                (void *)&g_motor_speed_right,
+                (void *)&g_motor_right,
                 WHEEL_SPEED_PRIO,
                 &h_monitor_right_wheel_speed_task_handle);
 
@@ -71,7 +87,7 @@ launch()
     xTaskCreate(motor_pid_task,
                 "motor_pid_task",
                 configMINIMAL_STACK_SIZE,
-                (void *)&g_motor_speed_right,
+                (void *)&g_motor_right,
                 WHEEL_SPEED_PRIO,
                 &h_motor_pid_right_task_handle);
 
