@@ -27,19 +27,19 @@
  * Ki = Kp / Tu = 0.021
  * Kd = Kp * Tu / 8 = 42
  */
-motor_t g_motor_left  = { .pwm.pwm_level = 0u,
-                          .pwm.pwm_channel = PWM_CHAN_A,
+motor_t g_motor_left  = { .pwm.level         = 0u,
+                          .pwm.channel       = PWM_CHAN_A,
                           .speed.distance_cm = 0.0f,
-                          .pid.pid_kp = 8.4f,
-                          .pid.pid_ki = 0.021f,
-                          .pid.pid_kd = 42.f,};
+                          .pid.kp_value      = 8.4f,
+                          .pid.ki_value      = 0.021f,
+                          .pid.kd_value      = 42.f,};
 
-motor_t g_motor_right = { .pwm.pwm_level = 0u,
-                          .pwm.pwm_channel = PWM_CHAN_B,
+motor_t g_motor_right = { .pwm.level         = 0u,
+                          .pwm.channel       = PWM_CHAN_B,
                           .speed.distance_cm = 0.0f,
-                          .pid.pid_kp = 0.0f,
-                          .pid.pid_ki = 0.0f,
-                          .pid.pid_kd = 0.0f,};
+                          .pid.kp_value      = 0.0f,
+                          .pid.ki_value      = 0.0f,
+                          .pid.kd_value      = 0.0f,};
 
 void
 motor_init(void)

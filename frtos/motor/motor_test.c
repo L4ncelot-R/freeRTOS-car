@@ -11,30 +11,30 @@ test_speed_change_task(void *p_param)
 {
     for (;;)
     {
-        g_motor_left.speed.target_speed_cms  = 30.0f;
-        g_motor_right.speed.target_speed_cms = 30.0f;
+        g_motor_left.speed.target_cms  = 30.0f;
+        g_motor_right.speed.target_cms = 30.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
-        g_motor_left.speed.target_speed_cms  = 20.0f;
-        g_motor_right.speed.target_speed_cms = 20.0f;
+        g_motor_left.speed.target_cms  = 20.0f;
+        g_motor_right.speed.target_cms = 20.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
-        g_motor_left.speed.target_speed_cms  = 0.0f;
-        g_motor_right.speed.target_speed_cms = 0.0f;
+        g_motor_left.speed.target_cms  = 0.0f;
+        g_motor_right.speed.target_cms = 0.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
         set_wheel_direction(DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_BACKWARD);
 
-        g_motor_left.speed.target_speed_cms  = 30.0f;
-        g_motor_right.speed.target_speed_cms = 30.0f;
+        g_motor_left.speed.target_cms  = 30.0f;
+        g_motor_right.speed.target_cms = 30.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
-        g_motor_left.speed.target_speed_cms  = 20.0f;
-        g_motor_right.speed.target_speed_cms = 20.0f;
+        g_motor_left.speed.target_cms  = 20.0f;
+        g_motor_right.speed.target_cms = 20.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
-        g_motor_left.speed.target_speed_cms  = 0.0f;
-        g_motor_right.speed.target_speed_cms = 0.0f;
+        g_motor_left.speed.target_cms  = 0.0f;
+        g_motor_right.speed.target_cms = 0.0f;
         vTaskDelay(pdMS_TO_TICKS(5000));
 
         set_wheel_direction(DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD);

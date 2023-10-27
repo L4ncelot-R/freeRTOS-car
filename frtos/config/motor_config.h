@@ -34,8 +34,8 @@
  * @param distance_cm Distance travelled in cm
  */
 typedef struct {
-    float    target_speed_cms;
-    float    current_speed_cms;
+    float    target_cms;
+    float    current_cms;
     float    distance_cm;
 } motor_speed_t;
 
@@ -47,8 +47,8 @@ typedef struct {
  */
 typedef struct {
     uint     slice_num;
-    uint     pwm_channel;
-    uint16_t pwm_level;
+    uint     channel;
+    uint16_t level;
 } motor_pwm_t;
 
 /*!
@@ -58,9 +58,9 @@ typedef struct {
  * @param pid_kd Derivative gain
  */
 typedef struct {
-    float pid_kp;
-    float pid_ki;
-    float pid_kd;
+    float kp_value;
+    float ki_value;
+    float kd_value;
 } motor_pid_t;
 
 /*!
