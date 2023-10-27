@@ -10,6 +10,18 @@
 #define ALPHA                                   ( 0.01f ) // Complementary
                                                           // Filter Constant
 
+// LSM303DLHC temperature compensation coefficients
+#define SCALE_Z                                 ( 1.0f ) // Scale for Z-axis
+#define OFFSET_Z                                ( 3.0f ) // Offset for Z-axis
+
+#define TEMPERATURE_OFFSET                      ( 25.0f ) // Reference
+                                                          // temperature for
+                                                          // calibration
+
+#define TEMPERATURE_COEFFICIENT_Z               ( 0.33f ) // Temperature
+                                                          // coefficient for
+                                                          // Z-axis
+
 /**
  * @brief The orientation of the car
  */

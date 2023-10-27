@@ -28,15 +28,7 @@
 #define LSM303_TEMP_OUT_H_M         0x31
 #define LSM303_TEMP_OUT_L_M         0x32
 
-// LSM303DLHC temperature compensation coefficients
-#define SCALE_Z                     0.9 // Scale factor for Z-axis
-#define OFFSET_Z                    5.0 // Offset for Z-axis
 
-#define TEMPERATURE_OFFSET          25.0 // Reference temperature for calibration
-#define TEMPERATURE_COEFFICIENT_Z   0.33
-
-#define OFFSET_Z                    5.0
-#define SCALE_Z                     0.9
 
 #define ACCEL_ADDR                  0x19
 #define MAG_ADDR                    0x1E
