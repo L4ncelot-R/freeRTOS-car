@@ -94,6 +94,8 @@ main (void)
 
     line_sensor_setup();
 
+    init_ultrasonic();
+
     initialize_car_state(); // TODO: Could be common functionality, To confirm
                             // during Integration
     launch();
