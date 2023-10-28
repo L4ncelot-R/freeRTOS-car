@@ -14,14 +14,35 @@
  *
  * @param params
  */
+//void
+//monitor_left_sensor_task(__unused void *params) {
+//    for (;;)
+//    {
+//        if (xSemaphoreTake(g_left_sensor_sem, portMAX_DELAY) == pdTRUE)
+//        {
+//            if (left_sensor_triggered == pdTRUE)
+//            {
+//                printf("left sensor triggered\n");
+//                // Get Current State
+//                state_t state = gpio_get(LEFT_SENSOR_PIN);
+//
+//                xMessageBufferSend(left_sensor_msg_buffer,
+//                                   &state,
+//                                   sizeof(state_t),
+//                                   0);
+//                // Reset the flag
+//                left_sensor_triggered = pdFALSE;
+//            }
+//        }
+//    }
+//}
+
 void
 monitor_left_sensor_task(__unused void *params) {
     for (;;)
     {
         if (xSemaphoreTake(g_left_sensor_sem, portMAX_DELAY) == pdTRUE)
         {
-            if (left_sensor_triggered == pdTRUE)
-            {
                 printf("left sensor triggered\n");
                 // Get Current State
                 state_t state = gpio_get(LEFT_SENSOR_PIN);
@@ -30,9 +51,6 @@ monitor_left_sensor_task(__unused void *params) {
                                    &state,
                                    sizeof(state_t),
                                    0);
-                // Reset the flag
-                left_sensor_triggered = pdFALSE;
-            }
         }
     }
 }
@@ -45,12 +63,32 @@ monitor_left_sensor_task(__unused void *params) {
  *
  * @param params
  */
+//void
+//monitor_right_sensor_task(void *params) {
+//    for (;;) {
+//        if (xSemaphoreTake(g_right_sensor_sem, portMAX_DELAY) == pdTRUE) {
+//            // Check the flag or receive the message
+//            if (right_sensor_triggered == pdTRUE) {
+//                printf("right sensor triggered\n");
+//                // Get Current State
+//                state_t state = gpio_get(RIGHT_SENSOR_PIN);
+//
+//                xMessageBufferSend(right_sensor_msg_buffer,
+//                                   &state,
+//                                   sizeof(state_t),
+//                                   0);
+//                // Reset the flag
+//                right_sensor_triggered = pdFALSE;
+//            }
+//        }
+//    }
+//}
+
 void
 monitor_right_sensor_task(void *params) {
     for (;;) {
         if (xSemaphoreTake(g_right_sensor_sem, portMAX_DELAY) == pdTRUE) {
             // Check the flag or receive the message
-            if (right_sensor_triggered == pdTRUE) {
                 printf("right sensor triggered\n");
                 // Get Current State
                 state_t state = gpio_get(RIGHT_SENSOR_PIN);
@@ -59,13 +97,9 @@ monitor_right_sensor_task(void *params) {
                                    &state,
                                    sizeof(state_t),
                                    0);
-                // Reset the flag
-                right_sensor_triggered = pdFALSE;
-            }
         }
     }
 }
-
 
 /**
  * @brief Monitor the direction and Oritentation of the car
