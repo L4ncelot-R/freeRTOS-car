@@ -4,6 +4,7 @@ add_subdirectory(motor)
 add_subdirectory(line_sensor)
 add_subdirectory(car)
 add_subdirectory(ultrasonic_sensor)
+add_subdirectory(magnetometer)
 
 add_executable(rtos_car rtos_car.c)
 
@@ -27,6 +28,7 @@ target_link_libraries(rtos_car
         FreeRTOS-Kernel-Heap4 # FreeRTOS kernel and dynamic heap
         hardware_adc
         hardware_pwm
+        hardware_i2c
 )
 pico_enable_stdio_usb(rtos_car 1)
 pico_add_extra_outputs(rtos_car)

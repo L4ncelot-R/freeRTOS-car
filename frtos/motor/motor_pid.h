@@ -16,18 +16,20 @@
  * @return The control signal
  */
 float
-compute_pid(const volatile float *target_speed,
-            const volatile float *current_speed,
+compute_pid(const volatile motor_t *p_motor,
             float                *integral,
             float                *prev_error)
 {
-    float error = *target_speed - *current_speed;
+    float error = p_motor->speed.target_cms - p_motor->speed.current_cms;
+
     *integral += error;
 
     float derivative = error - *prev_error;
 
     float control_signal
-        = PID_KP * error + PID_KI * (*integral) + PID_KD * derivative;
+        = p_motor->pid.kp_value * error +
+          p_motor->pid.ki_value * (*integral) +
+          p_motor->pid.kd_value * derivative;
 
     *prev_error = error;
 
@@ -37,35 +39,43 @@ compute_pid(const volatile float *target_speed,
 void
 motor_pid_task(void *p_param)
 {
-    motor_speed_t *p_motor_speed = p_param;
-    float         integral       = 0.0f;
-    float         prev_error     = 0.0f;
+    motor_t *p_motor   = p_param;
+    float   integral   = 0.0f;
+    float   prev_error = 0.0f;
 
     for (;;)
     {
-        float control_signal = compute_pid(&(p_motor_speed->target_speed_cms),
-                                           &(p_motor_speed->current_speed_cms),
-                                           &integral, &prev_error);
-
-        if (p_motor_speed->pwm_level + control_signal > MAX_SPEED)
+        if (p_motor->speed.target_cms == 0.0f)
         {
-            p_motor_speed->pwm_level = MAX_SPEED;
+            p_motor->pwm.level = 0;
+            pwm_set_chan_level(p_motor->pwm.slice_num,
+                               p_motor->pwm.channel,
+                               p_motor->pwm.level);
+            vTaskDelay(pdMS_TO_TICKS(50));
+            continue;
         }
-        else if (p_motor_speed->pwm_level + control_signal < MIN_SPEED)
+
+        float control_signal = compute_pid(p_motor, &integral, &prev_error);
+
+        if (p_motor->pwm.level + control_signal > MAX_SPEED)
         {
-            p_motor_speed->pwm_level = MIN_SPEED;
+            p_motor->pwm.level = MAX_SPEED;
+        }
+        else if (p_motor->pwm.level + control_signal < MIN_SPEED)
+        {
+            p_motor->pwm.level = MIN_SPEED;
         }
         else
         {
-            p_motor_speed->pwm_level = p_motor_speed->pwm_level + control_signal;
+            p_motor->pwm.level = p_motor->pwm.level + control_signal;
         }
 
-        printf("control signal: %f\n", control_signal);
-        printf("new pwm: %hu\n\n", p_motor_speed->pwm_level);
+        // printf("control signal: %f\n", control_signal);
+        // printf("new pwm: %hu\n\n", p_motor_speed->level);
 
-        pwm_set_chan_level(p_motor_speed->slice_num,
-                           p_motor_speed->pwm_channel,
-                           p_motor_speed->pwm_level);
+        pwm_set_chan_level(p_motor->pwm.slice_num,
+                           p_motor->pwm.channel,
+                           p_motor->pwm.level);
 
         vTaskDelay(pdMS_TO_TICKS(50));
     }

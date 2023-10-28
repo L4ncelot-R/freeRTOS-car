@@ -24,28 +24,57 @@
 #define PWM_CLK_DIV                 250.f
 #define PWM_WRAP                    5000U
 
-#define PID_KP                      3.f
-#define PID_KI                      0.01 // 0.01f
-#define PID_KD                      0.05f // 0.05f
-
 #define MAX_SPEED                   4900U
 #define MIN_SPEED                   0U    // To be changed
 
 /*!
- * @brief Structure for the motor speed
- * @param target_speed The target speed of the wheel, in cm/s
- * @param pwm_level The pwm level of the wheel, from 0 to 5000
- * @param sem The semaphore for the wheel
- * @param p_slice_num The pointer to the slice number of the wheel
- * @param channel The pwm channel of the wheel, left A or right B
+ * @brief Structure for the motor speed parameters
+ * @param target_speed_cms Target speed in cm/s
+ * @param current_speed_cms Current speed in cm/s
+ * @param distance_cm Distance travelled in cm
  */
 typedef struct {
-    float               target_speed_cms;
-    float               current_speed_cms;
-    uint16_t            pwm_level;
-    SemaphoreHandle_t   sem;
-    uint                slice_num;
-    uint                pwm_channel;
+    float    target_cms;
+    float    current_cms;
+    float    distance_cm;
 } motor_speed_t;
+
+/*!
+ * @brief Structure for the motor PWM parameters
+ * @param slice_num PWM slice number
+ * @param pwm_channel PWM channel, either A or B
+ * @param pwm_level PWM level, from 0 to 5000
+ */
+typedef struct {
+    uint     slice_num;
+    uint     channel;
+    uint16_t level;
+} motor_pwm_t;
+
+/*!
+ * @brief Structure for the motor PID parameters
+ * @param pid_kp Proportional gain
+ * @param pid_ki Integral gain
+ * @param pid_kd Derivative gain
+ */
+typedef struct {
+    float kp_value;
+    float ki_value;
+    float kd_value;
+} motor_pid_t;
+
+/*!
+ * @brief Structure for the motor parameters
+ * @param speed Motor speed parameters
+ * @param sem Semaphore for the motor speed
+ * @param pwm Motor PWM parameters
+ * @param pid Motor PID parameters
+ */
+typedef struct {
+    motor_speed_t     speed;
+    SemaphoreHandle_t sem;
+    motor_pwm_t       pwm;
+    motor_pid_t       pid;
+} motor_t;
 
 #endif /* MOTOR_CONFIG_H */
