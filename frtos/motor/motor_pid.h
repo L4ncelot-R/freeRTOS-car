@@ -21,8 +21,6 @@ compute_pid(float *integral, float *prev_error)
     float error
         = g_motor_left.speed.distance_cm - g_motor_right.speed.distance_cm;
 
-    printf("error: %f\n", error);
-
     *integral += error;
 
     float derivative = error - *prev_error;
@@ -56,7 +54,7 @@ motor_pid_task(__unused void *p_param)
 
         float control_signal = compute_pid(&integral, &prev_error);
 
-        float temp = (float) g_motor_right.pwm.level + control_signal;
+        float temp = (float) g_motor_right.pwm.level + control_signal * 0.05f;
 
         if (temp > MAX_SPEED)
         {

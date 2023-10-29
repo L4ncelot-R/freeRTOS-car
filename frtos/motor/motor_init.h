@@ -21,17 +21,14 @@
 
 motor_t g_motor_left  = { .pwm.level         = 0u,
                           .pwm.channel       = PWM_CHAN_A,
-                          .speed.distance_cm = 0.0f,
-                          .pid.kp_value      = 8.4f,
-                          .pid.ki_value      = 0.021f,
-                          .pid.kd_value      = 42.f,};
+                          .speed.distance_cm = 0.0f };
 
 motor_t g_motor_right = { .pwm.level         = 0u,
                           .pwm.channel       = PWM_CHAN_B,
                           .speed.distance_cm = 0.0f,
-                          .pid.kp_value      = 8.4f,
-                          .pid.ki_value      = 0.021f,
-                          .pid.kd_value      = 42.0f,};
+                          .pid.kp_value      = 1000.f,
+                          .pid.ki_value      = 0.0f,
+                          .pid.kd_value      = 10000.0f,};
 
 void
 motor_init(void)

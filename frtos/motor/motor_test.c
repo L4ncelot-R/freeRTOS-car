@@ -20,7 +20,7 @@ launch()
     irq_set_enabled(IO_IRQ_BANK0, true);
 
     // Set wheel speed
-    set_wheel_speed(3000);
+    set_wheel_speed(3500);
 
     // Left wheel
     //
@@ -60,7 +60,7 @@ main(void)
 {
     stdio_usb_init();
 
-    sleep_ms(2000);
+    sleep_ms(4000);
     printf("Test started!\n");
 
     motor_init();
