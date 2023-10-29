@@ -3,6 +3,7 @@
 
 #define READ_LEFT_SENSOR_PRIO           (tskIDLE_PRIORITY + 2UL)
 #define READ_RIGHT_SENSOR_PRIO          (tskIDLE_PRIORITY + 2UL)
+#define READ_RIGHT_SENSOR_PRIO          (tskIDLE_PRIORITY + 2UL)
 
 #define DIRECTION_TASK_PRIORITY         (tskIDLE_PRIORITY + 3UL)
 
@@ -16,6 +17,10 @@ launch()
     // isr to detect right line sensor
     gpio_set_irq_enabled(RIGHT_SENSOR_PIN, GPIO_IRQ_EDGE_FALL, true);
     gpio_add_raw_irq_handler(RIGHT_SENSOR_PIN, h_line_sensor_handler);
+
+    // isr to detect barcode line sensor
+    gpio_set_irq_enabled(BARCODE_SENSOR_PIN, GPIO_IRQ_EDGE_FALL, true);
+    gpio_add_raw_irq_handler(BARCODE_SENSOR_PIN, h_line_sensor_handler);
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 
@@ -42,6 +47,14 @@ launch()
     TaskHandle_t h_monitor_right_sensor_task;
     xTaskCreate(monitor_right_sensor_task,
                 "Monitor Right Sensor Task",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                READ_RIGHT_SENSOR_PRIO,
+                &h_monitor_right_sensor_task);
+
+    TaskHandle_t h_monitor_barcode_sensor_task;
+    xTaskCreate(monitor_barcode_sensor_task,
+                "Monitor Barcode Sensor Task",
                 configMINIMAL_STACK_SIZE,
                 NULL,
                 READ_RIGHT_SENSOR_PRIO,

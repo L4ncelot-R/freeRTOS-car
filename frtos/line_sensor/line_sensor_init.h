@@ -23,6 +23,7 @@
 
 static TickType_t lastEdgeTimeLeft = 0;
 static TickType_t lastEdgeTimeRight = 0;
+static TickType_t lastBarcodeTime = 0;
 
 typedef enum { // Unused, useful for readability
     LINE_DETECTED = 0,
@@ -53,13 +54,16 @@ typedef struct {
 // Semaphore
 SemaphoreHandle_t g_left_sensor_sem = NULL;
 SemaphoreHandle_t g_right_sensor_sem = NULL;
+SemaphoreHandle_t g_barcode_sensor_sem = NULL;
 
 // Queue
 static MessageBufferHandle_t left_sensor_msg_buffer;   // Left Sensor Buffer
 static MessageBufferHandle_t right_sensor_msg_buffer;   // Right Sensor Buffer
+static MessageBufferHandle_t barcode_sensor_msg_buffer;   // Barcode Sensor Buffer
 
 static volatile BaseType_t right_sensor_triggered = pdFALSE;
 static volatile BaseType_t left_sensor_triggered = pdFALSE;
+static volatile BaseType_t barcode_sensor_triggered = pdFALSE;
 
 // Car State Struct
 static car_state_t g_car_state;
@@ -82,15 +86,17 @@ static inline void
 line_sensor_setup() {
     g_left_sensor_sem = xSemaphoreCreateBinary();
     g_right_sensor_sem = xSemaphoreCreateBinary();
+    g_barcode_sensor_sem = xSemaphoreCreateBinary();
 
-    uint mask = (1 << LEFT_SENSOR_PIN) | (1 << RIGHT_SENSOR_PIN);
+    uint mask = (1 << LEFT_SENSOR_PIN) | (1 << RIGHT_SENSOR_PIN) | (1 << BARCODE_SENSOR_PIN);
 
-    // Initialise 2 GPIO pins and set them to input
+    // Initialise 3 GPIO pins and set them to input
     gpio_init_mask(mask);
     gpio_set_dir_in_masked(mask);
 
     left_sensor_msg_buffer = xMessageBufferCreate(30);
     right_sensor_msg_buffer = xMessageBufferCreate(30);
+    barcode_sensor_msg_buffer = xMessageBufferCreate(30);
 
 }
 
@@ -118,6 +124,22 @@ bool h_right_sensor_timer_handler(repeating_timer_t *repeatingTimer) {
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     xSemaphoreGiveFromISR(g_right_sensor_sem,
+                          &xHigherPriorityTaskWoken);
+    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+
+    return true;
+}
+
+/**
+ * @brief Timer Interrupt Handler for the barcode sensor
+ *
+ * @param repeatingTimer
+ * @return True (To keep the timer running)
+ */
+bool h_barcode_sensor_timer_handler(repeating_timer_t *repeatingTimer) {
+
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    xSemaphoreGiveFromISR(g_barcode_sensor_sem,
                           &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
@@ -163,6 +185,25 @@ void h_line_sensor_handler(void) {
         {
             // Reset the timer to the currentTicks if the edge is ignored
             lastEdgeTimeRight = currentTicks;
+        }
+    }
+
+    if (gpio_get_irq_event_mask(BARCODE_SENSOR_PIN) & GPIO_IRQ_EDGE_FALL)
+    {
+        if ((currentTicks - lastBarcodeTime) >=
+            pdMS_TO_TICKS(DEBOUNCE_DELAY_MS))
+        {
+            lastBarcodeTime = currentTicks;
+            gpio_acknowledge_irq(BARCODE_SENSOR_PIN, GPIO_IRQ_EDGE_FALL);
+            // Set the flag to notify the task
+            barcode_sensor_triggered = pdTRUE;
+            xSemaphoreGiveFromISR(g_barcode_sensor_sem,
+                                  &xHigherPriorityTaskWoken);
+        }
+        else
+        {
+            // Reset the timer to the currentTicks if the edge is ignored
+            lastBarcodeTime = currentTicks;
         }
     }
 

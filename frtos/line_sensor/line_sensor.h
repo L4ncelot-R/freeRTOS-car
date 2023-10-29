@@ -6,6 +6,7 @@
 
 #include "line_sensor_init.h"
 
+
 /**
  * @brief Monitor the left sensor
  *
@@ -66,7 +67,42 @@ monitor_right_sensor_task(void *params) {
     }
 }
 
+/**
+ * @brief Monitor the barcode sensor
+ *
+ * This function will monitor the barcode sensor and send the state to the
+ * barcode sensor message buffer, used to scan the barcode below the car
+ *
+ * @param params
+ */
+void monitor_barcode_sensor_task(void *params) {
+    for (;;) {
+        if (xSemaphoreTake(g_barcode_sensor_sem, portMAX_DELAY) == pdTRUE) {
+            // Check the flag or receive the message
+            if (barcode_sensor_triggered == pdTRUE) {
+                uint32_t barcode_data = 0;
 
+                for (int i = 0; i < 9; i++) {
+                    sleep_ms(100);  // Wait for a segment of the barcode
+
+                    if (gpio_get(BARCODE_SENSOR_PIN)) {
+                        barcode_data |= (1u << i);
+                    } else {
+                        barcode_data &= ~(1u << i);
+                    }
+                }
+
+                printf("Barcode Data (binary): %09b\n", barcode_data);
+
+                // Send or process the barcode data
+                xMessageBufferSend(barcode_sensor_msg_buffer, &barcode_data, sizeof(uint32_t), 0);
+
+                // Reset the flag
+                barcode_sensor_triggered = pdFALSE;
+            }
+        }
+    }
+}
 /**
  * @brief Monitor the direction and Oritentation of the car
  *
@@ -79,6 +115,7 @@ void
 monitor_direction_task(__unused void *params) {
     state_t left_state;
     state_t right_state;
+    state_t barcode_state;
 
     for (;;)
     {
@@ -90,6 +127,11 @@ monitor_direction_task(__unused void *params) {
 
         xMessageBufferReceive(right_sensor_msg_buffer,
                               &right_state,
+                              sizeof(state_t),
+                              portMAX_DELAY);
+        
+        xMessageBufferReceive(barcode_sensor_msg_buffer,
+                              &barcode_state,
                               sizeof(state_t),
                               portMAX_DELAY);
 
