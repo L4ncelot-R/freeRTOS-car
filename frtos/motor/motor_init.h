@@ -19,14 +19,6 @@
 
 #include "motor_config.h"
 
-// TODO: tune pid for both wheels again
-/*
- * ultimate gain Ku about 14, ultimate period Tu about 8 * 50 = 400ms
- * Ku = 14, Tu = 400ms,
- * Kp = 0.6 * Ku = 8.4
- * Ki = Kp / Tu = 0.021
- * Kd = Kp * Tu / 8 = 42
- */
 motor_t g_motor_left  = { .pwm.level         = 0u,
                           .pwm.channel       = PWM_CHAN_A,
                           .speed.distance_cm = 0.0f,
@@ -37,9 +29,9 @@ motor_t g_motor_left  = { .pwm.level         = 0u,
 motor_t g_motor_right = { .pwm.level         = 0u,
                           .pwm.channel       = PWM_CHAN_B,
                           .speed.distance_cm = 0.0f,
-                          .pid.kp_value      = 0.0f,
-                          .pid.ki_value      = 0.0f,
-                          .pid.kd_value      = 0.0f,};
+                          .pid.kp_value      = 8.4f,
+                          .pid.ki_value      = 0.021f,
+                          .pid.kd_value      = 42.0f,};
 
 void
 motor_init(void)

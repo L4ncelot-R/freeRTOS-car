@@ -63,18 +63,13 @@ monitor_wheel_speed_task(void *pvParameters)
             // circumference = 2 * pi * 3.25 cm = 20.4203522483 cm
             // distance = 20.4203522483 cm / 20 = 1.02101761242 cm
             p_motor->speed.current_cms
-                = (float) (1.02101761242f / (elapsed_time / 1000000.f));
+                = (float) (1021017.61242f / elapsed_time);
 
             p_motor->speed.distance_cm += 1.02101761242f;
-
-            // printf("speed: %f cm/s\n", p_motor_speed->current_cms);
         }
         else
         {
             p_motor->speed.current_cms = 0.f;
-            // printf("stopped\n");
         }
-
-        // printf("distance: %f cm\n", p_motor_speed->distance);
     }
 }

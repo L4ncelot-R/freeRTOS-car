@@ -34,7 +34,6 @@
  * @param distance_cm Distance travelled in cm
  */
 typedef struct {
-    float    target_cms;
     float    current_cms;
     float    distance_cm;
 } motor_speed_t;
