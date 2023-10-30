@@ -73,3 +73,45 @@ monitor_wheel_speed_task(void *pvParameters)
         }
     }
 }
+
+
+/*!
+ * @brief Set the distance to travel before stopping, must be called after
+ * setting the speed and direction.
+ * @param distance_cm distance to travel in cm
+ */
+void
+distance_to_stop(float distance_cm)
+{
+    float initial = g_motor_right.speed.distance_cm;
+    printf("initial: %f\n", initial);
+
+    for (;;)
+    {
+        if (g_motor_right.speed.distance_cm - initial >= distance_cm)
+        {
+            g_motor_right.pwm.level = 0;
+            g_motor_left.pwm.level  = 0;
+            break;
+        }
+        // vTaskDelay(pdMS_TO_TICKS(50));
+    }
+}
+
+/*!
+ * @brief Set the speed of the wheels
+ * @param pwm_level The pwm_level of the wheels, from 0 to 5000
+ */
+void
+set_wheel_speed(uint32_t pwm_level)
+{
+    g_motor_right.pwm.level = pwm_level;
+    g_motor_left.pwm.level  = pwm_level;
+
+    pwm_set_chan_level(g_motor_right.pwm.slice_num,
+                       g_motor_right.pwm.channel,
+                       g_motor_right.pwm.level);
+    pwm_set_chan_level(g_motor_left.pwm.slice_num,
+                       g_motor_left.pwm.channel,
+                       g_motor_left.pwm.level);
+}
