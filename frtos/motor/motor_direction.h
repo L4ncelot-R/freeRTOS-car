@@ -28,19 +28,46 @@ set_wheel_direction(uint32_t direction)
 }
 
 /*!
- * @brief Set the speed of the wheels
- * @param speed The speed of the wheels, from 0 to 5000
+ * @brief Turn the wheel, must set the priority higher than the motor PID task
+ * @param direction The direction of the wheel
+ * @param direction_after The direction of the wheel after turning
+ * @param speed_after The speed of the wheel after turning
  */
 void
-set_wheel_speed(uint32_t speed)
+turn_wheel(uint32_t direction)
 {
-    g_motor_right.pwm.level = speed;
-    g_motor_left.pwm.level  = speed;
+    set_wheel_speed(0u);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    float initial_right = g_motor_right.speed.distance_cm;
+    float initial_left  = g_motor_left.speed.distance_cm;
 
-    pwm_set_chan_level(g_motor_right.pwm.slice_num,
-                       g_motor_right.pwm.channel,
-                       g_motor_right.pwm.level);
-    pwm_set_chan_level(g_motor_left.pwm.slice_num,
-                       g_motor_left.pwm.channel,
-                       g_motor_left.pwm.level);
+    set_wheel_direction(direction);
+    set_wheel_speed(3500u);
+
+    for (;;)
+    {
+        // gap between wheels = 11.3cm, to turn 90 degrees, need to travel
+        // 11.3 * pi / 4 = 8.9cm
+        if (g_motor_left.speed.distance_cm - initial_left >= 6.8f)
+        {
+            g_motor_left.pwm.level = 0;
+            pwm_set_chan_level(g_motor_left.pwm.slice_num,
+                               g_motor_left.pwm.channel,
+                               g_motor_left.pwm.level);
+        }
+
+        if (g_motor_right.speed.distance_cm - initial_right >= 6.8f)
+        {
+            g_motor_right.pwm.level = 0;
+            pwm_set_chan_level(g_motor_right.pwm.slice_num,
+                               g_motor_right.pwm.channel,
+                               g_motor_right.pwm.level);
+        }
+
+        if (g_motor_left.pwm.level == 0u && g_motor_right.pwm.level == 0u)
+        {
+            break;
+        }
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
 }

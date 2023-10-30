@@ -4,7 +4,37 @@
 #include "motor_direction.h"
 #include "motor_pid.h"
 
-#define WHEEL_SPEED_PRIO (tskIDLE_PRIORITY + 1UL)
+#define WHEEL_SPEED_PRIO    (tskIDLE_PRIORITY + 2UL)
+#define WHEEL_CONTROL_PRIO  (tskIDLE_PRIORITY + 2UL)
+#define WHEEL_PID_PRIO      (tskIDLE_PRIORITY + 2UL)
+
+static void
+motor_control_task(__unused void *p_param)
+{
+    for (;;)
+    {
+        set_wheel_direction(DIRECTION_FORWARD);
+        set_wheel_speed(3000u);
+        distance_to_stop(30);
+
+        set_wheel_direction(DIRECTION_BACKWARD);
+        set_wheel_speed(3000u);
+        distance_to_stop(30);
+
+        turn_wheel(DIRECTION_LEFT);
+        set_wheel_direction(DIRECTION_FORWARD);
+        set_wheel_speed(3000u);
+        distance_to_stop(30);
+
+        turn_wheel(DIRECTION_RIGHT);
+        set_wheel_direction(DIRECTION_FORWARD);
+        set_wheel_speed(3000u);
+        distance_to_stop(30);
+
+        set_wheel_speed(0u);
+        vTaskDelay(pdMS_TO_TICKS(3000));
+    }
+}
 
 void
 launch()
@@ -19,8 +49,8 @@ launch()
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 
-    // Set wheel speed
-    set_wheel_speed(3500);
+//    set_wheel_direction(DIRECTION_FORWARD);
+//    set_wheel_speed(3000);
 
     // Left wheel
     //
@@ -31,7 +61,6 @@ launch()
                 (void *)&g_motor_left,
                 WHEEL_SPEED_PRIO,
                 &h_monitor_left_wheel_speed_task_handle);
-
 
     // Right wheel
     //
@@ -48,9 +77,17 @@ launch()
                 "motor_pid_task",
                 configMINIMAL_STACK_SIZE,
                 (void *)&g_motor_right,
-                WHEEL_SPEED_PRIO,
+                WHEEL_PID_PRIO,
                 &h_motor_pid_right_task_handle);
 
+    // control task
+    TaskHandle_t h_motor_turning_task_handle = NULL;
+    xTaskCreate(motor_control_task,
+                "motor_turning_task",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                WHEEL_CONTROL_PRIO,
+                &h_motor_turning_task_handle);
 
     vTaskStartScheduler();
 }
@@ -64,7 +101,6 @@ main(void)
     printf("Test started!\n");
 
     motor_init();
-    set_wheel_direction(DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD);
 
     launch();
 
