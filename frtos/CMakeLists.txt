@@ -5,6 +5,7 @@ add_subdirectory(line_sensor)
 add_subdirectory(car)
 add_subdirectory(ultrasonic_sensor)
 add_subdirectory(magnetometer)
+add_subdirectory(frontend)
 
 add_executable(rtos_car rtos_car.c)
 
@@ -20,6 +21,7 @@ target_include_directories(rtos_car PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/motor
         ${CMAKE_CURRENT_LIST_DIR}/line_sensor
         ${CMAKE_CURRENT_LIST_DIR}/ultrasonic_sensor
+        ${CMAKE_CURRENT_LIST_DIR}/frontend
 )
 target_link_libraries(rtos_car
         pico_cyw43_arch_lwip_sys_freertos
