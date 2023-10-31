@@ -14,46 +14,90 @@
 
 #include "motor_speed.h"
 #include "motor_direction.h"
+#include "motor_pid.h"
 
 #include "line_sensor.h"
 
 #include "ultrasonic_sensor.h"
 
-#define READ_LEFT_WHEEL_SPEED_PRIO      (tskIDLE_PRIORITY + 1UL)
-#define READ_RIGHT_WHEEL_SPEED_PRIO     (tskIDLE_PRIORITY + 1UL)
+#define READ_LEFT_SENSOR_PRIO    (tskIDLE_PRIORITY + 2UL)
+#define READ_RIGHT_SENSOR_PRIO   (tskIDLE_PRIORITY + 2UL)
+#define READ_BARCODE_SENSOR_PRIO (tskIDLE_PRIORITY + 2UL)
 
-#define READ_LEFT_SENSOR_PRIO           (tskIDLE_PRIORITY + 2UL)
-#define READ_RIGHT_SENSOR_PRIO          (tskIDLE_PRIORITY + 2UL)
-#define READ_BARCODE_SENSOR_PRIO        (tskIDLE_PRIORITY + 2UL)
+#define DIRECTION_TASK_PRIORITY (tskIDLE_PRIORITY + 3UL)
 
-#define DIRECTION_TASK_PRIORITY         (tskIDLE_PRIORITY + 3UL)
-
-#define DISTANCE_TASK_PRIORITY          (tskIDLE_PRIORITY + 4UL)
+#define DISTANCE_TASK_PRIORITY (tskIDLE_PRIORITY + 4UL)
 
 /* Common Car State Structure (TODO: TBC)*/
-//static car_state_t g_car_state;
+// static car_state_t g_car_state;
+
+static void
+motor_control_task(__unused void *p_param)
+{
+    static bool left = false;
+    static bool right = false;
+
+    for (;;)
+    {
+        state_t state = gpio_get(LEFT_SENSOR_PIN);
+        printf("state: %d\n", state);
+
+        if (state == 1)
+        {
+            if (!left)
+            {
+                spin_left_90();
+                left = true;
+            }
+            else if (!right)
+            {
+                spin_right_90();
+                spin_right_90();
+                right = true;
+            }
+            else
+            {
+                spin_right_90();
+                left = false;
+                right = false;
+            }
+        }
+        else
+        {
+            set_wheel_direction(DIRECTION_FORWARD);
+            set_wheel_speed_synced(3500u);
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+}
 
 void
 launch()
 {
+//    // isr to detect left line sensor
+//    gpio_set_irq_enabled(LEFT_SENSOR_PIN, GPIO_IRQ_EDGE_FALL, true);
+//    gpio_add_raw_irq_handler(LEFT_SENSOR_PIN, h_line_sensor_handler);
 
-    struct repeating_timer g_left_sensor_timer;
-    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
-                           h_left_sensor_timer_handler,
-                           NULL,
-                           &g_left_sensor_timer);
+    // isr to detect right motor slot
+    gpio_set_irq_enabled(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL, true);
+    gpio_add_raw_irq_handler(SPEED_PIN_RIGHT, h_wheel_sensor_isr_handler);
 
-    struct repeating_timer g_right_sensor_timer;
-    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
-                           h_right_sensor_timer_handler,
-                           NULL,
-                           &g_right_sensor_timer);
+    // isr to detect left motor slot
+    gpio_set_irq_enabled(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL, true);
+    gpio_add_raw_irq_handler(SPEED_PIN_LEFT, h_wheel_sensor_isr_handler);
 
-    struct repeating_timer g_barcode_sensor_timer;
-    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
-                           h_barcode_sensor_timer_handler,
-                           NULL,
-                           &g_barcode_sensor_timer);
+    irq_set_enabled(IO_IRQ_BANK0, true);
+
+//    // line sensor timer
+//    struct repeating_timer g_left_sensor_timer;
+//    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
+//                           h_left_sensor_timer_handler,
+//                           NULL,
+//                           &g_left_sensor_timer);
+
+    // PID timer
+    struct repeating_timer pid_timer;
+    add_repeating_timer_ms(-50, repeating_pid_handler, NULL, &pid_timer);
 
     TaskHandle_t h_monitor_left_sensor_task;
     xTaskCreate(monitor_left_sensor_task,
@@ -63,55 +107,53 @@ launch()
                 READ_LEFT_SENSOR_PRIO,
                 &h_monitor_left_sensor_task);
 
-    TaskHandle_t h_monitor_right_sensor_task;
-    xTaskCreate(monitor_right_sensor_task,
-                "Monitor Right Sensor Task",
+    // Left wheel
+    //
+    TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
+    xTaskCreate(monitor_wheel_speed_task,
+                "monitor_left_wheel_speed_task",
                 configMINIMAL_STACK_SIZE,
-                NULL,
-                READ_RIGHT_SENSOR_PRIO,
-                &h_monitor_right_sensor_task);
-    
-    TaskHandle_t h_monitor_barcode_sensor_task;
-    xTaskCreate(monitor_barcode_sensor_task,
-                "Monitor Barcode Sensor Task",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                READ_BARCODE_SENSOR_PRIO,
-                &h_monitor_barcode_sensor_task);
+                (void *)&g_motor_left,
+                WHEEL_SPEED_PRIO,
+                &h_monitor_left_wheel_speed_task_handle);
 
-    TaskHandle_t h_monitor_direction_task;
-    xTaskCreate(monitor_direction_task,
-                "Monitor Direction Task",
+    // Right wheel
+    //
+    TaskHandle_t h_monitor_right_wheel_speed_task_handle = NULL;
+    xTaskCreate(monitor_wheel_speed_task,
+                "monitor_wheel_speed_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)&g_motor_right,
+                WHEEL_SPEED_PRIO,
+                &h_monitor_right_wheel_speed_task_handle);
+
+    // control task
+    TaskHandle_t h_motor_turning_task_handle = NULL;
+    xTaskCreate(motor_control_task,
+                "motor_turning_task",
                 configMINIMAL_STACK_SIZE,
                 NULL,
-                DIRECTION_TASK_PRIORITY,
-                &h_monitor_direction_task);
-
-    TaskHandle_t h_monitor_distance_task;
-    xTaskCreate(distance_task, 
-                "Monitor Distance Task", 
-                configMINIMAL_STACK_SIZE, 
-                NULL, 
-                DISTANCE_TASK_PRIORITY, 
-                &h_monitor_distance_task);
+                WHEEL_CONTROL_PRIO,
+                &h_motor_turning_task_handle);
 
     vTaskStartScheduler();
 }
 
 int
-main (void)
+main(void)
 {
     stdio_usb_init();
 
-    motor_init();
+    sleep_ms(4000);
+    printf("Test started!\n");
 
-    set_wheel_direction(DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD);
+    motor_init();
 
     line_sensor_setup();
 
-    init_ultrasonic();
+    //init_ultrasonic();
 
-    initialize_car_state(); // TODO: Could be common functionality, To confirm
+    //initialize_car_state(); // TODO: Could be common functionality, To confirm
                             // during Integration
     launch();
 

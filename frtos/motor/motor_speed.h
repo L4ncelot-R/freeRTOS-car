@@ -74,6 +74,26 @@ monitor_wheel_speed_task(void *pvParameters)
     }
 }
 
+void
+set_wheel_speed(uint32_t pwm_level, motor_t * motor)
+{
+    motor->pwm.level = pwm_level;
+
+    pwm_set_chan_level(motor->pwm.slice_num,
+                       motor->pwm.channel,
+                       motor->pwm.level);
+}
+
+/*!
+ * @brief Set the speed of the wheels
+ * @param pwm_level The pwm_level of the wheels, from 0 to 5000
+ */
+void
+set_wheel_speed_synced(uint32_t pwm_level)
+{
+    set_wheel_speed(pwm_level, &g_motor_left);
+    set_wheel_speed(pwm_level, &g_motor_right);
+}
 
 /*!
  * @brief Set the distance to travel before stopping, must be called after
@@ -84,34 +104,16 @@ void
 distance_to_stop(float distance_cm)
 {
     float initial = g_motor_right.speed.distance_cm;
-    printf("initial: %f\n", initial);
 
     for (;;)
     {
         if (g_motor_right.speed.distance_cm - initial >= distance_cm)
         {
-            g_motor_right.pwm.level = 0;
-            g_motor_left.pwm.level  = 0;
+            set_wheel_speed_synced(0u);
             break;
         }
-        // vTaskDelay(pdMS_TO_TICKS(50));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
-}
-
-/*!
- * @brief Set the speed of the wheels
- * @param pwm_level The pwm_level of the wheels, from 0 to 5000
- */
-void
-set_wheel_speed(uint32_t pwm_level)
-{
-    g_motor_right.pwm.level = pwm_level;
-    g_motor_left.pwm.level  = pwm_level;
-
-    pwm_set_chan_level(g_motor_right.pwm.slice_num,
-                       g_motor_right.pwm.channel,
-                       g_motor_right.pwm.level);
-    pwm_set_chan_level(g_motor_left.pwm.slice_num,
-                       g_motor_left.pwm.channel,
-                       g_motor_left.pwm.level);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    g_motor_right.speed.distance_cm = g_motor_left.speed.distance_cm;
 }

@@ -27,47 +27,88 @@ set_wheel_direction(uint32_t direction)
     gpio_set_mask(direction);
 }
 
-/*!
- * @brief Turn the wheel, must set the priority higher than the motor PID task
- * @param direction The direction of the wheel
- * @param direction_after The direction of the wheel after turning
- * @param speed_after The speed of the wheel after turning
- */
 void
-turn_wheel(uint32_t direction)
+turn_left_90()
 {
-    set_wheel_speed(0u);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    float initial_right = g_motor_right.speed.distance_cm;
-    float initial_left  = g_motor_left.speed.distance_cm;
+    set_wheel_direction(DIRECTION_RIGHT_FORWARD);
+    set_wheel_speed(3500u, &g_motor_right);
 
-    set_wheel_direction(direction);
-    set_wheel_speed(3500u);
-
+    float initial = g_motor_right.speed.distance_cm;
     for (;;)
     {
-        // gap between wheels = 11.3cm, to turn 90 degrees, need to travel
-        // 11.3 * pi / 4 = 8.9cm
-        if (g_motor_left.speed.distance_cm - initial_left >= 6.8f)
+        if (g_motor_right.speed.distance_cm - initial >= 17.f)
         {
-            g_motor_left.pwm.level = 0;
-            pwm_set_chan_level(g_motor_left.pwm.slice_num,
-                               g_motor_left.pwm.channel,
-                               g_motor_left.pwm.level);
-        }
-
-        if (g_motor_right.speed.distance_cm - initial_right >= 6.8f)
-        {
-            g_motor_right.pwm.level = 0;
-            pwm_set_chan_level(g_motor_right.pwm.slice_num,
-                               g_motor_right.pwm.channel,
-                               g_motor_right.pwm.level);
-        }
-
-        if (g_motor_left.pwm.level == 0u && g_motor_right.pwm.level == 0u)
-        {
+            set_wheel_speed(0u, &g_motor_right);
             break;
         }
+        vTaskDelay(pdMS_TO_TICKS(5));
     }
     vTaskDelay(pdMS_TO_TICKS(1000));
+    g_motor_right.speed.distance_cm = initial;
+    g_motor_left.speed.distance_cm  = initial;
+}
+
+void
+turn_right_90()
+{
+    set_wheel_direction(DIRECTION_LEFT_FORWARD);
+    set_wheel_speed(3500u, &g_motor_left);
+
+    float initial = g_motor_left.speed.distance_cm;
+    for (;;)
+    {
+        if (g_motor_left.speed.distance_cm - initial >= 17.f)
+        {
+            set_wheel_speed(0u, &g_motor_left);
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    g_motor_left.speed.distance_cm  = initial;
+    g_motor_right.speed.distance_cm = initial;
+}
+
+void
+spin_left_90()
+{
+    set_wheel_direction(DIRECTION_LEFT);
+
+    set_wheel_speed_synced(3500u);
+
+    float initial = g_motor_left.speed.distance_cm;
+    for (;;)
+    {
+        if (g_motor_left.speed.distance_cm - initial >= 7.5f)
+        {
+            set_wheel_speed_synced(0u);
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    g_motor_left.speed.distance_cm  = initial;
+    g_motor_right.speed.distance_cm = initial;
+}
+
+void
+spin_right_90()
+{
+    set_wheel_direction(DIRECTION_RIGHT);
+
+    set_wheel_speed_synced(3500u);
+
+    float initial = g_motor_right.speed.distance_cm;
+    for (;;)
+    {
+        if (g_motor_right.speed.distance_cm - initial >= 7.5f)
+        {
+            set_wheel_speed_synced(0u);
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    g_motor_right.speed.distance_cm = initial;
+    g_motor_left.speed.distance_cm  = initial;
 }

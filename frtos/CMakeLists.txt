@@ -15,6 +15,7 @@ target_compile_definitions(rtos_car PRIVATE
         NO_SYS=0            # don't want NO_SYS (generally this would be in your lwipopts.h)
         LWIP_SOCKET=1       # we need the socket API (generally this would be in your lwipopts.h)
         PING_USE_SOCKETS=1
+        PICO_MAX_SHARED_IRQ_HANDLERS=5
 )
 target_include_directories(rtos_car PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/config
