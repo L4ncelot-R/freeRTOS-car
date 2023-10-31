@@ -6,15 +6,13 @@
  *
  * @details The direction of the car is calculated using the roll, pitch and yaw
  *          The roll and pitch are calculated using the accelerometer data
- *          The yaw is calculated using the magnetometer data
+ *          The yaw is calculated using the magnetometer and accelerometer data
  *          The roll, pitch and yaw are combined to calculate the direction
- *          of the car
- *
- *          The direction of the car is calculated using the complementary
- *          filter
+ *          of the car with a complementary filter and compensating for the
+ *          temperature.
  *
  *          The complementary filter is used to combine the accelerometer
- *          and magnetometer data to calculate the direction of the car
+ *          and magnetometer data (yaw) to calculate the direction of the car
  *
  *          Source:
  *          https://www.nxp.com/docs/en/application-note/AN3461.pdf

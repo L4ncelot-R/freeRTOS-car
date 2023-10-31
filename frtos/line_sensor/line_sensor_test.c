@@ -24,17 +24,17 @@ launch()
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 
-//    struct repeating_timer g_left_sensor_timer;
-//    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
-//                           h_left_sensor_timer_handler,
-//                           NULL,
-//                           &g_left_sensor_timer);
-//
-//    struct repeating_timer g_right_sensor_timer;
-//    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
-//                           h_right_sensor_timer_handler,
-//                           NULL,
-//                           &g_right_sensor_timer);
+    struct repeating_timer g_left_sensor_timer;
+    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
+                           h_left_sensor_timer_handler,
+                           NULL,
+                           &g_left_sensor_timer);
+
+    struct repeating_timer g_right_sensor_timer;
+    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
+                           h_right_sensor_timer_handler,
+                           NULL,
+                           &g_right_sensor_timer);
 
     TaskHandle_t h_monitor_left_sensor_task;
     xTaskCreate(monitor_left_sensor_task,

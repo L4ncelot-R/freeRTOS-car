@@ -30,9 +30,9 @@ main (void)
 {
     stdio_usb_init();
 
-    sleep_ms(2000);
+//    sleep_ms(2000);
 
-    printf("Test started!\n");
+//    printf("Test started!\n");
     magnetometer_init();
 
     launch();
