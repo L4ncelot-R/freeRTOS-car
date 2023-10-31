@@ -24,6 +24,7 @@
 
 #define READ_LEFT_SENSOR_PRIO           (tskIDLE_PRIORITY + 2UL)
 #define READ_RIGHT_SENSOR_PRIO          (tskIDLE_PRIORITY + 2UL)
+#define READ_BARCODE_SENSOR_PRIO        (tskIDLE_PRIORITY + 2UL)
 
 #define DIRECTION_TASK_PRIORITY         (tskIDLE_PRIORITY + 3UL)
 
@@ -48,6 +49,12 @@ launch()
                            NULL,
                            &g_right_sensor_timer);
 
+    struct repeating_timer g_barcode_sensor_timer;
+    add_repeating_timer_ms(LINE_SENSOR_READ_DELAY,
+                           h_barcode_sensor_timer_handler,
+                           NULL,
+                           &g_barcode_sensor_timer);
+
     TaskHandle_t h_monitor_left_sensor_task;
     xTaskCreate(monitor_left_sensor_task,
                 "Monitor Left Sensor Task",
@@ -63,6 +70,14 @@ launch()
                 NULL,
                 READ_RIGHT_SENSOR_PRIO,
                 &h_monitor_right_sensor_task);
+    
+    TaskHandle_t h_monitor_barcode_sensor_task;
+    xTaskCreate(monitor_barcode_sensor_task,
+                "Monitor Barcode Sensor Task",
+                configMINIMAL_STACK_SIZE,
+                NULL,
+                READ_BARCODE_SENSOR_PRIO,
+                &h_monitor_barcode_sensor_task);
 
     TaskHandle_t h_monitor_direction_task;
     xTaskCreate(monitor_direction_task,
