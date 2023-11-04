@@ -7,14 +7,14 @@
 
 #define DIRECTION_READ_DELAY                    ( 100 )
 
-#define ALPHA                                   ( 0.01f ) // Complementary
+#define ALPHA                                   ( 0.0f ) // Complementary
                                                           // Filter Constant
 
 // LSM303DLHC temperature compensation coefficients
 #define SCALE_Z                                 ( 1.0f ) // Scale for Z-axis
-#define OFFSET_Z                                ( 3.0f ) // Offset for Z-axis
+#define OFFSET_Z                                ( 0.0f ) // Offset for Z-axis
 
-#define TEMPERATURE_OFFSET                      ( 25.0f ) // Reference
+#define TEMPERATURE_OFFSET                      ( 32.0f ) // Reference
                                                           // temperature for
                                                           // calibration
 
