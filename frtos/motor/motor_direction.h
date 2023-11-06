@@ -19,12 +19,22 @@
 void
 set_wheel_direction(uint32_t direction)
 {
-    static const uint32_t mask
-        = DIRECTION_LEFT_FORWARD | DIRECTION_LEFT_BACKWARD
-          | DIRECTION_RIGHT_FORWARD | DIRECTION_RIGHT_BACKWARD;
-
-    gpio_put_masked(mask, 0U);
+    gpio_put_masked(DIRECTION_MASK, 0U);
     gpio_set_mask(direction);
+}
+
+/*!
+ * @brief Set the direction of the wheel to opposite direction using bit mask
+ */
+void
+revert_wheel_direction()
+{
+    uint32_t current_direction = gpio_get_all();
+
+    uint32_t reverted_direction = current_direction ^ DIRECTION_MASK;
+
+    gpio_put_masked(DIRECTION_MASK, 0U);
+    gpio_set_mask(reverted_direction & DIRECTION_MASK);
 }
 
 void
