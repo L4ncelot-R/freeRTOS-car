@@ -28,11 +28,11 @@
 #define SPEED_PIN_RIGHT 15U
 #define SPEED_PIN_LEFT  16U
 
-#define PWM_CLK_DIV 250.f
-#define PWM_WRAP    5000U
+#define PWM_CLK_DIV 50.f
+#define PWM_WRAP    100U
 
-#define MAX_SPEED 4900U
-#define MIN_SPEED 0U // To be changed
+#define MAX_PWM_LEVEL 99U
+#define MIN_PWM_LEVEL 0U
 
 #define WHEEL_SPEED_PRIO    (tskIDLE_PRIORITY + 1UL)
 #define WHEEL_CONTROL_PRIO  (tskIDLE_PRIORITY + 1UL)
@@ -96,5 +96,7 @@ typedef struct
     float         distance_to_travel_cm;
     volatile bool is_running;
 } distance_to_stop_t;
+
+volatile bool g_use_pid = true;
 
 #endif /* MOTOR_CONFIG_H */

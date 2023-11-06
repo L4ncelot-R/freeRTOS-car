@@ -86,11 +86,16 @@ set_wheel_speed(uint32_t pwm_level, motor_t * motor)
 
 /*!
  * @brief Set the speed of the wheels
- * @param pwm_level The pwm_level of the wheels, from 0 to 5000
+ * @param pwm_level The pwm_level of the wheels, from 0 to 99
  */
 void
 set_wheel_speed_synced(uint32_t pwm_level)
 {
+    if (pwm_level > MAX_PWM_LEVEL)
+    {
+        pwm_level = MAX_PWM_LEVEL;
+    }
+
     set_wheel_speed(pwm_level, &g_motor_left);
     set_wheel_speed(pwm_level, &g_motor_right);
 }

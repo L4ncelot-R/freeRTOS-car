@@ -21,7 +21,7 @@ compute_pid(float *integral, float *prev_error)
     float error
         = g_motor_left.speed.distance_cm - g_motor_right.speed.distance_cm;
 
-    printf("%f,\n", error);
+    printf("%f\n", error);
 
     *integral += error;
 
@@ -42,7 +42,7 @@ repeating_pid_handler(__unused struct repeating_timer *t)
     static float integral   = 0.0f;
     static float prev_error = 0.0f;
 
-    if ((g_motor_left.pwm.level == 0u) || (g_motor_right.pwm.level == 0u))
+    if (!g_use_pid)
     {
         return true;
     }
@@ -51,14 +51,14 @@ repeating_pid_handler(__unused struct repeating_timer *t)
 
     float temp = (float)g_motor_right.pwm.level + control_signal * 0.05f;
 
-    if (temp > MAX_SPEED)
+    if (temp > MAX_PWM_LEVEL)
     {
-        temp = MAX_SPEED;
+        temp = MAX_PWM_LEVEL;
     }
 
-    if (temp < MIN_SPEED)
+    if (temp <= MIN_PWM_LEVEL)
     {
-        temp = MIN_SPEED + 1u;
+        temp = MIN_PWM_LEVEL + 1u;
     }
 
     g_motor_right.pwm.level = (uint16_t)temp;
@@ -66,8 +66,8 @@ repeating_pid_handler(__unused struct repeating_timer *t)
                        g_motor_right.pwm.channel,
                        g_motor_right.pwm.level);
 
-    printf("speed: %f cm/s\n", g_motor_right.speed.current_cms);
-    printf("distance: %f cm\n", g_motor_right.speed.distance_cm);
+//    printf("speed: %f cm/s\n", g_motor_right.speed.current_cms);
+//    printf("distance: %f cm\n", g_motor_right.speed.distance_cm);
 
     return true;
 }
