@@ -32,7 +32,6 @@ SemaphoreHandle_t g_direction_sem = NULL;
 direction_t g_direction = {
         .roll = 0,
         .pitch = 0,
-//        .heading = 0,
         .yaw = 0,
         .orientation = NORTH,
         .roll_angle = LEFT,
