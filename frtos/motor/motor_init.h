@@ -23,12 +23,17 @@ motor_t g_motor_left  = { .pwm.level         = 0u,
                           .pwm.channel       = PWM_CHAN_A,
                           .speed.distance_cm = 0.0f };
 
+// classic ziegler nichols method
+// Ku = 1000, Tu = 0.9s, interval = 0.05s
+// Kp = 0.6 * Ku = 600
+// Ki = 2 * Kp * 0.05 / Tu = 66.67
+// Kd = Kp * Tu * 0.05 / 8 = 1350
 motor_t g_motor_right = { .pwm.level         = 0u,
                           .pwm.channel       = PWM_CHAN_B,
                           .speed.distance_cm = 0.0f,
-                          .pid.kp_value      = 1000.f,
-                          .pid.ki_value      = 0.0f,
-                          .pid.kd_value      = 10000.0f,};
+                          .pid.kp_value      = 600.f,
+                          .pid.ki_value      = 66.67f,
+                          .pid.kd_value      = 1350.f,};
 
 void
 motor_init(void)
@@ -62,11 +67,12 @@ motor_init(void)
 
     // NOTE: PWM clock is 125MHz for raspberrypi pico w by default
 
-    // 125MHz / 250 = 500kHz
+    // 125MHz / 50 = 2500kHz
     pwm_set_clkdiv(g_motor_left.pwm.slice_num, PWM_CLK_DIV);
     pwm_set_clkdiv(g_motor_right.pwm.slice_num, PWM_CLK_DIV);
 
-    // have them to be 500kHz / 5000 = 100Hz
+    // L289N can accept up to 40kHz
+    // 2500kHz / 100 = 25kHz
     pwm_set_wrap(g_motor_left.pwm.slice_num, (PWM_WRAP - 1U));
     pwm_set_wrap(g_motor_right.pwm.slice_num, (PWM_WRAP - 1U));
 

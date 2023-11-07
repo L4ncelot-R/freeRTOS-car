@@ -4,6 +4,22 @@
 #include "motor_direction.h"
 #include "motor_pid.h"
 
+void
+motor_control_task(__unused void *params)
+{
+    for (;;)
+    {
+        set_wheel_direction(DIRECTION_FORWARD);
+        set_wheel_speed_synced(90);
+
+        vTaskDelay(pdMS_TO_TICKS(10000));
+
+        revert_wheel_direction();
+        set_wheel_speed_synced(90);
+
+        vTaskDelay(pdMS_TO_TICKS(10000));
+    }
+}
 
 void
 launch()
