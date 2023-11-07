@@ -5,6 +5,7 @@
  */
 
 #include "motor_init.h"
+#include "magnetometer_init.h"
 
 /*!
  * @brief Set the direction of the wheels; can use bitwise OR to set both
@@ -41,7 +42,7 @@ void
 turn_left_90()
 {
     set_wheel_direction(DIRECTION_RIGHT_FORWARD);
-    set_wheel_speed(3500u, &g_motor_right);
+    set_wheel_speed(90u, &g_motor_right);
 
     float initial = g_motor_right.speed.distance_cm;
     for (;;)
@@ -62,7 +63,7 @@ void
 turn_right_90()
 {
     set_wheel_direction(DIRECTION_LEFT_FORWARD);
-    set_wheel_speed(3500u, &g_motor_left);
+    set_wheel_speed(90u, &g_motor_left);
 
     float initial = g_motor_left.speed.distance_cm;
     for (;;)
@@ -84,7 +85,7 @@ spin_left_90()
 {
     set_wheel_direction(DIRECTION_LEFT);
 
-    set_wheel_speed_synced(3500u);
+    set_wheel_speed_synced(90u);
 
     float initial = g_motor_left.speed.distance_cm;
     for (;;)
@@ -106,7 +107,7 @@ spin_right_90()
 {
     set_wheel_direction(DIRECTION_RIGHT);
 
-    set_wheel_speed_synced(3500u);
+    set_wheel_speed_synced(90u);
 
     float initial = g_motor_right.speed.distance_cm;
     for (;;)
@@ -121,4 +122,38 @@ spin_right_90()
     vTaskDelay(pdMS_TO_TICKS(1000));
     g_motor_right.speed.distance_cm = initial;
     g_motor_left.speed.distance_cm  = initial;
+}
+
+void
+spin_to_yaw(float target_yaw)
+{
+    float initial_yaw = g_direction.yaw;
+
+    // if it will to turn more than 180 degrees, turn the other way
+    if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw < 180.f)
+        || ((target_yaw < initial_yaw) && (initial_yaw - target_yaw >= 180.f)))
+    {
+        set_wheel_direction(DIRECTION_LEFT);
+    }
+    else if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw >= 180.f)
+             || ((target_yaw < initial_yaw)
+                 && (initial_yaw - target_yaw < 180.f)))
+    {
+        set_wheel_direction(DIRECTION_RIGHT);
+    }
+
+    set_wheel_speed_synced(90u);
+
+    g_use_pid = false;
+
+    for (;;)
+    {
+        if (initial_yaw == target_yaw)
+        {
+            set_wheel_speed_synced(0u);
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    g_use_pid = true;
 }
