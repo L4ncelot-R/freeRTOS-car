@@ -65,10 +65,10 @@ calculate_yaw_magnetometer(int16_t magnetometer[3]) {
  * @param yaw_mag   Yaw calculated from Magnetometer Data
  * @return yaw      Yaw calculated from Complementary Filter
  */
-static inline float
-calculate_yaw_complementary(float yaw_acc, float yaw_mag) {
-    return ALPHA * yaw_acc + (1 - ALPHA) * yaw_mag;
-}
+//static inline float
+//calculate_yaw_complementary(float yaw_acc, float yaw_mag) {
+//    return ALPHA * yaw_acc + (1 - ALPHA) * yaw_mag;
+//}
 
 /**
  * @brief Compensate the magnetometer readings for temperature
@@ -220,9 +220,7 @@ update_orientation_data(float roll, float pitch, float yaw,
  * @param magnetometer  Magnetometer Data
  */
 static void
-read_direction(int16_t acceleration[3],
-               int16_t magnetometer[3],
-               int16_t temperature[1]) {
+read_direction(int16_t acceleration[3], int16_t magnetometer[3]) {
 
     float roll = calculate_roll(acceleration);
     float pitch = calculate_pitch(acceleration);
@@ -260,7 +258,8 @@ read_direction(int16_t acceleration[3],
  * @param params
  */
 void print_orientation_data() {
-    printf("Roll: %f, Pitch: %f, Yaw: %f\n",
+//    printf("Roll: %f, Pitch: %f, Yaw: %f\n",
+           printf("%f %f %f\n",
            g_direction.roll,
            g_direction.pitch,
            g_direction.yaw
@@ -331,16 +330,16 @@ void updateDirection() {
     read_accelerometer(accelerometer);
     read_temperature(temperature);
 
-    read_direction(accelerometer, magnetometer, temperature);
+    read_direction(accelerometer, magnetometer);
 
     // Temperature in degrees Celsius
-    printf("Temperature: %d\n", temperature[0]);
+//    printf("Temperature: %d\n", temperature[0]);
 
     print_orientation_data();
 
-    printf("Direction: ");
+//    printf("Direction: ");
 
-    print_direction(g_direction.orientation);
+//    print_direction(g_direction.orientation);
 
     switch (g_direction.orientation)
     {

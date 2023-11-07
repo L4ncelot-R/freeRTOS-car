@@ -7,8 +7,13 @@
 
 #define DIRECTION_READ_DELAY                    ( 100 )
 
-#define ALPHA                                   ( 0.0f ) // Complementary
-                                                          // Filter Constant
+#define NUM_READINGS                            ( 10 ) // Number of readings to
+                                                        // take before
+                                                        // calculating
+                                                        // direction
+
+//#define ALPHA                                   ( 0.1f ) // Low Pass Filter
+                                                          // Coefficient
 
 // LSM303DLHC temperature compensation coefficients
 #define SCALE_Z                                 ( 1.0f ) // Scale for Z-axis

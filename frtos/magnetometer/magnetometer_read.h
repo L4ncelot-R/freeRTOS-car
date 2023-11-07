@@ -58,25 +58,34 @@ read_accelerometer(int16_t accelerometer[3]) {
 }
 
 /**
- * @brief Read Magnetometer Data
+ * @brief Read Magnetometer Data with Moving Average
  * @param magnetometer  Magnetometer Data
  */
 static inline void
 read_magnetometer(int16_t magnetometer[3]) {
     uint8_t buffer[6];
+    int32_t xMagFiltered = 0;
+    int32_t yMagFiltered = 0;
+    int32_t zMagFiltered = 0;
 
-    buffer[0] = read_data(MAG_ADDR, LSM303_OUT_X_H_M);
-    buffer[1] = read_data(MAG_ADDR, LSM303_OUT_X_L_M);
-    buffer[2] = read_data(MAG_ADDR, LSM303_OUT_Y_H_M);
-    buffer[3] = read_data(MAG_ADDR, LSM303_OUT_Y_L_M);
-    buffer[4] = read_data(MAG_ADDR, LSM303_OUT_Z_H_M);
-    buffer[5] = read_data(MAG_ADDR, LSM303_OUT_Z_L_M);
+    for (int i = 0; i < NUM_READINGS; i++) {
+        buffer[0] = read_data(MAG_ADDR, LSM303_OUT_X_H_M);
+        buffer[1] = read_data(MAG_ADDR, LSM303_OUT_X_L_M);
+        buffer[2] = read_data(MAG_ADDR, LSM303_OUT_Y_H_M);
+        buffer[3] = read_data(MAG_ADDR, LSM303_OUT_Y_L_M);
+        buffer[4] = read_data(MAG_ADDR, LSM303_OUT_Z_H_M);
+        buffer[5] = read_data(MAG_ADDR, LSM303_OUT_Z_L_M);
 
-    magnetometer[0] = (int16_t) (buffer[0] << 8 | buffer[1]); //xMag
+        // Update the cumulative sum of the magnetometer data
+        xMagFiltered += (int16_t)(buffer[0] << 8 | buffer[1]);
+        yMagFiltered += (int16_t)(buffer[2] << 8 | buffer[3]);
+        zMagFiltered += (int16_t)(buffer[4] << 8 | buffer[5]);
+    }
 
-    magnetometer[1] = (int16_t) (buffer[2] << 8 | buffer[3]); //yMag
-
-    magnetometer[2] = (int16_t) (buffer[4] << 8 | buffer[5]); //zMag
+    // Calculate the moving average
+    magnetometer[0] = xMagFiltered / NUM_READINGS;
+    magnetometer[1] = yMagFiltered / NUM_READINGS;
+    magnetometer[2] = zMagFiltered / NUM_READINGS;
 }
 
 /**
