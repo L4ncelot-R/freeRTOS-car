@@ -23,6 +23,7 @@ target_include_directories(rtos_car PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}/line_sensor
         ${CMAKE_CURRENT_LIST_DIR}/ultrasonic_sensor
         ${CMAKE_CURRENT_LIST_DIR}/frontend
+        ${CMAKE_CURRENT_LIST_DIR}/magnetometer
 )
 target_link_libraries(rtos_car
         pico_cyw43_arch_lwip_sys_freertos

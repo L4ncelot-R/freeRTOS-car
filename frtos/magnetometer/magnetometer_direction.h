@@ -103,6 +103,11 @@ adjust_yaw(float yaw) {
         yaw += 360;
     }
 
+    if (yaw > 360)
+    {
+        yaw -= 360;
+    }
+
     return yaw;
 }
 

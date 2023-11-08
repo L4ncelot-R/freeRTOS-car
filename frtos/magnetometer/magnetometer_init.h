@@ -299,9 +299,9 @@ magnetometer_init()
 //    initial_calibration();
 
 //    sleep_ms(3000);
-//    printf("Magnetometer Initialised\n");
+    printf("Magnetometer Initialised\n");
     // Semaphore
-    g_direction_sem = xSemaphoreCreateBinary();
+    // g_direction_sem = xSemaphoreCreateBinary();
 }
 
 /**

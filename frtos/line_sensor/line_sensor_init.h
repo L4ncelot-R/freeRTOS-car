@@ -30,26 +30,26 @@ typedef enum { // Unused, useful for readability
     LINE_NOT_DETECTED = 1,
 } state_t;
 
-typedef enum {
-    ERROR = 0,
-    RIGHT = 1,
-    LEFT = 2,
-    FORWARD = 3
-} direction_t;
+//typedef enum {
+//    ERROR = 0,
+//    RIGHT = 1,
+//    LEFT = 2,
+//    FORWARD = 3
+//} direction_t;
 
-typedef enum {
-    NORTH = 0,
-    EAST = 1,
-    SOUTH = 2,
-    WEST = 3,
-} orientation_t;
+//typedef enum {
+//    NORTH = 0,
+//    EAST = 1,
+//    SOUTH = 2,
+//    WEST = 3,
+//} orientation_t;
 
-typedef struct {
-    u_int8_t x;                     // Current x coordinate
-    u_int8_t y;                     // Current y coordinate
-    direction_t current_direction;  // Current direction (forward, left, right)
-    orientation_t orientation;      // Current orientation (N, E, S, W)
-} car_state_t;
+//typedef struct {
+//    uint8_t x;                     // Current x coordinate
+//    uint8_t y;                     // Current y coordinate
+//    direction_t current_direction;  // Current direction (forward, left, right)
+//    orientation_t orientation;      // Current orientation (N, E, S, W)
+//} car_state_t;
 
 // Semaphore
 SemaphoreHandle_t g_left_sensor_sem = NULL;
@@ -65,17 +65,17 @@ static volatile BaseType_t right_sensor_triggered = pdFALSE;
 static volatile BaseType_t left_sensor_triggered = pdFALSE;
 static volatile BaseType_t barcode_sensor_triggered = pdFALSE;
 
-// Car State Struct
-static car_state_t g_car_state;
-
-static car_state_t initialize_car_state() {
-    g_car_state.x = MAP_SIZE >> 1;
-    g_car_state.y = MAP_SIZE >> 1;
-    g_car_state.current_direction = FORWARD;
-    g_car_state.orientation = NORTH;
-
-    return g_car_state;
-}
+//// Car State Struct
+//static car_state_t g_car_state;
+//
+//static car_state_t initialize_car_state() {
+//    g_car_state.x = MAP_SIZE >> 1;
+//    g_car_state.y = MAP_SIZE >> 1;
+//    g_car_state.current_direction = FORWARD;
+//    g_car_state.orientation = NORTH;
+//
+//    return g_car_state;
+//}
 
 /**
  * @brief Setup the Line Sensor
