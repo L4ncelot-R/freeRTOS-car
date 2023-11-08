@@ -377,7 +377,7 @@ void updateDirection() {
 //    update_map(g_direction.orientation, cur_x, cur_y);
 
 //    printf("Current Position: (%d, %d)\n", cur_x, cur_y);
-//     print_map();
+//    print_map();
 
 //    print_roll_and_pitch(g_direction.roll_angle, g_direction.pitch_angle);
 }
