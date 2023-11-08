@@ -80,80 +80,80 @@ turn_right_90()
     g_motor_right.speed.distance_cm = initial;
 }
 
-void
-spin_left_90()
-{
-    set_wheel_direction(DIRECTION_LEFT);
+//void
+//spin_left_90()
+//{
+//    set_wheel_direction(DIRECTION_LEFT);
+//
+//    set_wheel_speed_synced(90u);
+//
+//    float initial = g_motor_left.speed.distance_cm;
+//    for (;;)
+//    {
+//        if (g_motor_left.speed.distance_cm - initial >= 7.5f)
+//        {
+//            set_wheel_speed_synced(0u);
+//            break;
+//        }
+//        vTaskDelay(pdMS_TO_TICKS(5));
+//    }
+//    vTaskDelay(pdMS_TO_TICKS(1000));
+//    g_motor_left.speed.distance_cm  = initial;
+//    g_motor_right.speed.distance_cm = initial;
+//}
 
-    set_wheel_speed_synced(90u);
+//void
+//spin_right_90()
+//{
+//    set_wheel_direction(DIRECTION_RIGHT);
+//
+//    set_wheel_speed_synced(90u);
+//
+//    float initial = g_motor_right.speed.distance_cm;
+//    for (;;)
+//    {
+//        if (g_motor_right.speed.distance_cm - initial >= 7.5f)
+//        {
+//            set_wheel_speed_synced(0u);
+//            break;
+//        }
+//        vTaskDelay(pdMS_TO_TICKS(5));
+//    }
+//    vTaskDelay(pdMS_TO_TICKS(1000));
+//    g_motor_right.speed.distance_cm = initial;
+//    g_motor_left.speed.distance_cm  = initial;
+//}
 
-    float initial = g_motor_left.speed.distance_cm;
-    for (;;)
-    {
-        if (g_motor_left.speed.distance_cm - initial >= 7.5f)
-        {
-            set_wheel_speed_synced(0u);
-            break;
-        }
-        vTaskDelay(pdMS_TO_TICKS(5));
-    }
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    g_motor_left.speed.distance_cm  = initial;
-    g_motor_right.speed.distance_cm = initial;
-}
-
-void
-spin_right_90()
-{
-    set_wheel_direction(DIRECTION_RIGHT);
-
-    set_wheel_speed_synced(90u);
-
-    float initial = g_motor_right.speed.distance_cm;
-    for (;;)
-    {
-        if (g_motor_right.speed.distance_cm - initial >= 7.5f)
-        {
-            set_wheel_speed_synced(0u);
-            break;
-        }
-        vTaskDelay(pdMS_TO_TICKS(5));
-    }
-    vTaskDelay(pdMS_TO_TICKS(1000));
-    g_motor_right.speed.distance_cm = initial;
-    g_motor_left.speed.distance_cm  = initial;
-}
-
-void
-spin_to_yaw(float target_yaw)
-{
-    float initial_yaw = g_direction.yaw;
-
-    // if it will to turn more than 180 degrees, turn the other way
-    if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw < 180.f)
-        || ((target_yaw < initial_yaw) && (initial_yaw - target_yaw >= 180.f)))
-    {
-        set_wheel_direction(DIRECTION_LEFT);
-    }
-    else if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw >= 180.f)
-             || ((target_yaw < initial_yaw)
-                 && (initial_yaw - target_yaw < 180.f)))
-    {
-        set_wheel_direction(DIRECTION_RIGHT);
-    }
-
-    set_wheel_speed_synced(90u);
-
-    g_use_pid = false;
-
-    for (;;)
-    {
-        if (initial_yaw == target_yaw)
-        {
-            set_wheel_speed_synced(0u);
-            break;
-        }
-        vTaskDelay(pdMS_TO_TICKS(5));
-    }
-    g_use_pid = true;
-}
+//void
+//spin_to_yaw(float target_yaw)
+//{
+//    float initial_yaw = g_direction.yaw;
+//
+//    // if it will to turn more than 180 degrees, turn the other way
+//    if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw < 180.f)
+//        || ((target_yaw < initial_yaw) && (initial_yaw - target_yaw >= 180.f)))
+//    {
+//        set_wheel_direction(DIRECTION_LEFT);
+//    }
+//    else if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw >= 180.f)
+//             || ((target_yaw < initial_yaw)
+//                 && (initial_yaw - target_yaw < 180.f)))
+//    {
+//        set_wheel_direction(DIRECTION_RIGHT);
+//    }
+//
+//    set_wheel_speed_synced(90u);
+//
+//    g_use_pid = false;
+//
+//    for (;;)
+//    {
+//        if (initial_yaw == target_yaw)
+//        {
+//            set_wheel_speed_synced(0u);
+//            break;
+//        }
+//        vTaskDelay(pdMS_TO_TICKS(5));
+//    }
+//    g_use_pid = true;
+//}

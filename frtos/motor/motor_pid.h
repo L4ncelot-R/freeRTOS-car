@@ -36,6 +36,19 @@ compute_pid(float *integral, float *prev_error)
     return control_signal;
 }
 
+float
+compute_i_controller(float *integral)
+{
+    float error
+        = g_motor_left.speed.distance_cm - g_motor_right.speed.distance_cm;
+
+    printf("%f\n", error);
+
+    *integral += error;
+
+    return g_motor_right.pid.ki_value * (*integral);
+}
+
 bool
 repeating_pid_handler(__unused struct repeating_timer *t)
 {
@@ -66,8 +79,38 @@ repeating_pid_handler(__unused struct repeating_timer *t)
                        g_motor_right.pwm.channel,
                        g_motor_right.pwm.level);
 
-//    printf("speed: %f cm/s\n", g_motor_right.speed.current_cms);
-//    printf("distance: %f cm\n", g_motor_right.speed.distance_cm);
+    //    printf("speed: %f cm/s\n", g_motor_right.speed.current_cms);
+    //    printf("distance: %f cm\n", g_motor_right.speed.distance_cm);
+
+    return true;
+}
+
+bool
+repeating_i_handler(__unused struct repeating_timer *t)
+{
+    static float integral = 0.0f;
+
+    if (!g_use_pid)
+    {
+        integral = 0.0f; // reset once disabled
+        return true;
+    }
+
+    float control_signal = compute_i_controller(&integral);
+
+    float temp = (float)g_motor_right.pwm.level + control_signal * 0.05f;
+
+    if (temp > MAX_PWM_LEVEL)
+    {
+        temp = MAX_PWM_LEVEL;
+    }
+
+    if (temp <= MIN_PWM_LEVEL)
+    {
+        temp = MIN_PWM_LEVEL;
+    }
+
+    set_wheel_speed((uint32_t)temp, &g_motor_right);
 
     return true;
 }
