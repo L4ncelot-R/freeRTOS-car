@@ -10,12 +10,14 @@ motor_control_task(__unused void *params)
     for (;;)
     {
         set_wheel_direction(DIRECTION_FORWARD);
-        set_wheel_speed_synced(90);
+        set_wheel_speed(90u, &g_motor_left);
+        set_wheel_speed(90u, &g_motor_right);
 
         vTaskDelay(pdMS_TO_TICKS(10000));
 
         revert_wheel_direction();
-        set_wheel_speed_synced(90);
+        set_wheel_speed(90u, &g_motor_left);
+        set_wheel_speed(90u, &g_motor_right);
 
         vTaskDelay(pdMS_TO_TICKS(10000));
     }
@@ -37,6 +39,7 @@ launch()
     // PID timer
     struct repeating_timer pid_timer;
     add_repeating_timer_ms(-50, repeating_pid_handler, NULL, &pid_timer);
+//    add_repeating_timer_ms(-50, repeating_pid_handler, NULL, &pid_timer);
 
     // Left wheel
     //
