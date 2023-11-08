@@ -5,6 +5,9 @@
  * @author Richie
  */
 
+#ifndef MOTOR_PID_H
+#define MOTOR_PID_H
+
 // #include "magnetometer_init.h"
 
 /*!
@@ -114,3 +117,5 @@ repeating_i_handler(__unused struct repeating_timer *t)
 
     return true;
 }
+
+#endif /* MOTOR_PID_H */

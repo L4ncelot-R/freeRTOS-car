@@ -3,6 +3,8 @@
  * @brief monitor and update the speed of the wheels
  * @author Richie
  */
+#ifndef MOTOR_SPEED_H
+#define MOTOR_SPEED_H
 
 #include "motor_init.h"
 
@@ -84,21 +86,21 @@ set_wheel_speed(uint32_t pwm_level, motor_t * motor)
                        motor->pwm.level);
 }
 
-///*!
-// * @brief Set the speed of the wheels
-// * @param pwm_level The pwm_level of the wheels, from 0 to 99
-// */
-//void
-//set_wheel_speed_synced(uint32_t pwm_level)
-//{
-//    if (pwm_level > MAX_PWM_LEVEL)
-//    {
-//        pwm_level = MAX_PWM_LEVEL;
-//    }
-//
-//    set_wheel_speed(pwm_level, &g_motor_left);
-//    set_wheel_speed(pwm_level, &g_motor_right);
-//}
+/*!
+ * @brief Set the speed of the wheels
+ * @param pwm_level The pwm_level of the wheels, from 0 to 99
+ */
+void
+set_wheel_speed_synced(uint32_t pwm_level)
+{
+    if (pwm_level > MAX_PWM_LEVEL)
+    {
+        pwm_level = MAX_PWM_LEVEL;
+    }
+
+    set_wheel_speed(pwm_level, &g_motor_left);
+    set_wheel_speed(pwm_level, &g_motor_right);
+}
 
 ///*!
 // * @brief Set the distance to travel before stopping, must be called after
@@ -122,3 +124,5 @@ set_wheel_speed(uint32_t pwm_level, motor_t * motor)
 //    vTaskDelay(pdMS_TO_TICKS(1000));
 //    g_motor_right.speed.distance_cm = g_motor_left.speed.distance_cm;
 //}
+
+#endif /* MOTOR_SPEED_H */

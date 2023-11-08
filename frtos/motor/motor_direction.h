@@ -4,8 +4,12 @@
  * @author Richie
  */
 
+#ifndef MOTOR_DIRECTION_H
+#define MOTOR_DIRECTION_H
+
 #include "motor_init.h"
 #include "magnetometer_init.h"
+#include "magnetometer_direction.h"
 
 /*!
  * @brief Set the direction of the wheels; can use bitwise OR to set both
@@ -124,36 +128,44 @@ turn_right_90()
 //    g_motor_left.speed.distance_cm  = initial;
 //}
 
-//void
-//spin_to_yaw(float target_yaw)
-//{
-//    float initial_yaw = g_direction.yaw;
-//
-//    // if it will to turn more than 180 degrees, turn the other way
-//    if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw < 180.f)
-//        || ((target_yaw < initial_yaw) && (initial_yaw - target_yaw >= 180.f)))
-//    {
-//        set_wheel_direction(DIRECTION_LEFT);
-//    }
-//    else if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw >= 180.f)
-//             || ((target_yaw < initial_yaw)
-//                 && (initial_yaw - target_yaw < 180.f)))
-//    {
-//        set_wheel_direction(DIRECTION_RIGHT);
-//    }
-//
-//    set_wheel_speed_synced(90u);
-//
-//    g_use_pid = false;
-//
-//    for (;;)
-//    {
-//        if (initial_yaw == target_yaw)
+void
+spin_to_yaw(float target_yaw)
+{
+    float initial_yaw = g_direction.yaw;
+
+    // if it will to turn more than 180 degrees, turn the other way
+    if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw < 180.f)
+        || ((target_yaw < initial_yaw) && (initial_yaw - target_yaw >= 180.f)))
+    {
+        set_wheel_direction(DIRECTION_LEFT);
+    }
+    else if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw >= 180.f)
+             || ((target_yaw < initial_yaw)
+                 && (initial_yaw - target_yaw < 180.f)))
+    {
+        set_wheel_direction(DIRECTION_RIGHT);
+    }
+
+    set_wheel_speed_synced(50u);
+
+    g_use_pid = false;
+
+    for (;;)
+    {
+//        if (xSemaphoreTake(g_direction_sem, portMAX_DELAY) == pdTRUE)
 //        {
-//            set_wheel_speed_synced(0u);
-//            break;
+//            updateDirection();
 //        }
-//        vTaskDelay(pdMS_TO_TICKS(5));
-//    }
-//    g_use_pid = true;
-//}
+        updateDirection();
+        print_orientation_data();
+        if (initial_yaw == target_yaw)
+        {
+            set_wheel_speed_synced(0u);
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
+    }
+    g_use_pid = true;
+}
+
+#endif /* MOTOR_DIRECTION_H */
