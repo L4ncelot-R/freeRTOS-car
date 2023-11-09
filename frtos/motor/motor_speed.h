@@ -68,6 +68,8 @@ monitor_wheel_speed_task(void *ppp_motor)
                 = (float) (1021017.61242f / elapsed_time);
 
             p_motor->speed.distance_cm += 1.02101761242f;
+
+            printf("speed\n");
         }
         else
         {

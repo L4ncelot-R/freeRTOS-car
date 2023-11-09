@@ -8,9 +8,4 @@
 
 #define ULTRASONIC_SENSOR_READ_DELAY (100)
 
-typedef struct
-{
-    bool obstacle_detected;
-} ultrasonic_t;
-
 #endif // ULTRASONIC_CONFIG_H

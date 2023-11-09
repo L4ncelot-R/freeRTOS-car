@@ -29,10 +29,9 @@ SemaphoreHandle_t g_left_sensor_sem = NULL;
  * This function will setup the Line Sensor by initializing it as an input
  */
 static inline void
-line_sensor_init() {
-//    obs_t obs = {0, 0};
-//
-//    p_car->obs = &obs;
+line_sensor_init(car_struct_t *p_car_struct)
+{
+    p_car_struct->obs->line_detected = false;
 
     g_left_sensor_sem = xSemaphoreCreateBinary();
 
@@ -74,6 +73,18 @@ monitor_left_sensor_task(void *pvParameters) {
             vTaskDelay(pdMS_TO_TICKS(LINE_SENSOR_READ_DELAY));
 //        }
     }
+}
+
+void
+line_tasks_init(car_struct_t *car_struct)
+{
+    TaskHandle_t h_monitor_left_sensor_task = NULL;
+    xTaskCreate(monitor_left_sensor_task,
+                "read_left_sensor_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)car_struct->obs,
+                PRIO,
+                &h_monitor_left_sensor_task);
 }
 
 

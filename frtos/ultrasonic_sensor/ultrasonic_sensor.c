@@ -4,32 +4,24 @@
 #include <stdio.h>
 
 #include "ultrasonic_sensor.h"
+#include "car_config.h"
 
-void
-vLaunch(void)
-{   
-    // gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, echo_handler);
-
-    // irq_set_enabled(IO_IRQ_BANK0, true);
-
-    TaskHandle_t disttask;
-    xTaskCreate(check_obstacle,
-                "TestDistThread",
-                configMINIMAL_STACK_SIZE,
-                NULL,
-                1,
-                &disttask);
-
-    vTaskStartScheduler();
-}
 
 int
 main(void)
 {
     stdio_init_all();
-    init_ultrasonic();
+
+    obs_t obs;
+
+    car_struct_t car_struct = { .obs = &obs };
+
+    ultrasonic_init(&car_struct);
     sleep_ms(1000);
-    vLaunch();
+
+    ultrasonic_task_init(&car_struct);
+
+    vTaskStartScheduler();
 
     return 0;
 }
