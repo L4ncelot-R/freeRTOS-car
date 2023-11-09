@@ -19,8 +19,6 @@
  * the same function.
  * if the motor direction is not set, it will not move.
  * @param direction The direction of the left and right wheels
- * @param left_speed The speed of the left motor, from 0.0 to 1.0
- * @param right_speed The speed of the right motor, from 0.0 to 1.0
  */
 void
 set_wheel_direction(uint32_t direction)
@@ -43,6 +41,13 @@ revert_wheel_direction()
     gpio_set_mask(reverted_direction & DIRECTION_MASK);
 }
 
+/*!
+ * @brief Check if the current direction is within the range of the target
+ * @param current_direction current yaw
+ * @param target_direction target yaw
+ * @param range acceptable range
+ * @return true if the current direction is within the range of the target
+ */
 bool
 check_direction(float current_direction, float target_direction, float range)
 {
@@ -64,28 +69,19 @@ check_direction(float current_direction, float target_direction, float range)
     return false;
 }
 
+/*!
+ * @brief Spin the car to a certain yaw
+ * @param target_yaw The target yaw to spin to
+ * @param pp_car_struct The car struct pointer
+ */
 void
-spin_to_yaw(float target_yaw, car_struct_t *car_struct)
+spin_to_yaw(uint32_t direction, float target_yaw, car_struct_t *pp_car_struct)
 {
-    updateDirection();
-    float initial_yaw = g_direction.yaw;
+    set_wheel_direction(direction);
 
-    // if it will to turn more than 180 degrees, turn the other way
-    if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw < 180.f)
-        || ((target_yaw < initial_yaw) && (initial_yaw - target_yaw >= 180.f)))
-    {
-        set_wheel_direction(DIRECTION_RIGHT);
-    }
-    else if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw >= 180.f)
-             || ((target_yaw < initial_yaw)
-                 && (initial_yaw - target_yaw < 180.f)))
-    {
-        set_wheel_direction(DIRECTION_LEFT);
-    }
+    set_wheel_speed_synced(80u, pp_car_struct);
 
-    set_wheel_speed_synced(80u, car_struct);
-
-    car_struct->p_pid->use_pid = false;
+    pp_car_struct->p_pid->use_pid = false;
 
     for (;;)
     {
@@ -93,13 +89,31 @@ spin_to_yaw(float target_yaw, car_struct_t *car_struct)
         if (check_direction(g_direction.yaw, target_yaw, 1))
         {
             set_wheel_direction(DIRECTION_MASK);
-            set_wheel_speed_synced(0u, car_struct);
+            set_wheel_speed_synced(0u, pp_car_struct);
             break;
         }
     }
 
-    car_struct->p_pid->use_pid = true;
+    pp_car_struct->p_pid->use_pid = true;
     vTaskDelay(pdMS_TO_TICKS(50));
+}
+
+void
+spin_right(float degree, car_struct_t *pp_car_struct)
+{
+    updateDirection();
+    float initial_yaw = g_direction.yaw;
+    float target_yaw  = adjust_yaw(initial_yaw + degree);
+    spin_to_yaw(DIRECTION_RIGHT, target_yaw, pp_car_struct);
+}
+
+void
+spin_left(float degree, car_struct_t *pp_car_struct)
+{
+    updateDirection();
+    float initial_yaw = g_direction.yaw;
+    float target_yaw  = adjust_yaw(initial_yaw - degree);
+    spin_to_yaw(DIRECTION_LEFT, target_yaw, pp_car_struct);
 }
 
 #endif /* MOTOR_DIRECTION_H */

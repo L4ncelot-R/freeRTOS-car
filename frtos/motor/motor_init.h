@@ -17,8 +17,19 @@
 #include "task.h"
 #include "semphr.h"
 
-#include "motor_config.h"
+#include "motor_speed.h"
+#include "motor_direction.h"
+#include "motor_pid.h"
 
+#include "car_config.h"
+
+/*!
+ * @brief Initialize the motor
+ * @param car_struct The car_struct. Need to have the following fields:\n
+ *                  - p_left_motor\n
+ *                  - p_right_motor\n
+ *                  - p_pid
+ */
 void
 motor_init(car_struct_t *car_struct)
 {
@@ -83,6 +94,45 @@ motor_init(car_struct_t *car_struct)
 
     pwm_set_enabled(car_struct->p_left_motor->pwm.slice_num, true);
     pwm_set_enabled(car_struct->p_right_motor->pwm.slice_num, true);
+}
+
+/*!
+ * @brief init the tasks for the motor
+ * @param pp_car_struct The car struct
+ * @param p_isr_handler The isr handler
+ */
+void
+motor_tasks_init(car_struct_t *pp_car_struct, void *p_isr_handler)
+{
+    // Left wheel
+    //
+    TaskHandle_t h_monitor_left_wheel_speed_task_handle = NULL;
+    xTaskCreate(monitor_wheel_speed_task,
+                "monitor_left_wheel_speed_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)pp_car_struct->p_left_motor,
+                PRIO,
+                &h_monitor_left_wheel_speed_task_handle);
+
+    // Right wheel
+    //
+    TaskHandle_t h_monitor_right_wheel_speed_task_handle = NULL;
+    xTaskCreate(monitor_wheel_speed_task,
+                "monitor_wheel_speed_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)pp_car_struct->p_right_motor,
+                PRIO,
+                &h_monitor_right_wheel_speed_task_handle);
+
+    // isr to detect right motor slot
+    gpio_set_irq_enabled(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL, true);
+    gpio_add_raw_irq_handler(SPEED_PIN_RIGHT, p_isr_handler);
+
+    // isr to detect left motor slot
+    gpio_set_irq_enabled(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL, true);
+    gpio_add_raw_irq_handler(SPEED_PIN_LEFT, p_isr_handler);
+
+    irq_set_enabled(IO_IRQ_BANK0, true);
 }
 
 #endif /* MOTOR_INIT_H */

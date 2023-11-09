@@ -34,10 +34,6 @@
 #define MAX_PWM_LEVEL 99U
 #define MIN_PWM_LEVEL 0U
 
-#define WHEEL_SPEED_PRIO   (tskIDLE_PRIORITY + 1UL)
-#define WHEEL_CONTROL_PRIO (tskIDLE_PRIORITY + 1UL)
-#define WHEEL_PID_PRIO     (tskIDLE_PRIORITY + 1UL)
-
 /*!
  * @brief Structure for the motor speed parameters
  * @param current_speed_cms Current speed in cm/s
@@ -47,6 +43,7 @@ typedef struct
 {
     float current_cms;
     float distance_cm;
+
 } motor_speed_t;
 
 /*!
@@ -67,6 +64,7 @@ typedef struct
  * @param pid_kp Proportional gain
  * @param pid_ki Integral gain
  * @param pid_kd Derivative gain
+ * @param use_pid Flag to use PID or not
  */
 typedef struct
 {
@@ -79,9 +77,9 @@ typedef struct
 /*!
  * @brief Structure for the motor parameters
  * @param speed Motor speed parameters
- * @param sem Semaphore for the motor speed
  * @param pwm Motor PWM parameters
- * @param pid Motor PID parameters
+ * @param p_sem Pointer to the semaphore
+ * @param use_pid Pointer to the use_pid flag
  */
 typedef struct
 {
@@ -102,12 +100,13 @@ typedef struct
 SemaphoreHandle_t g_left_sem;
 SemaphoreHandle_t g_right_sem;
 
-typedef struct
-{
-    motor_t     * p_left_motor;
-    motor_t     * p_right_motor;
-    motor_pid_t * p_pid;
-
-} car_struct_t;
+// for testing
+//typedef struct
+//{
+//    motor_t     * p_left_motor;
+//    motor_t     * p_right_motor;
+//    motor_pid_t * p_pid;
+//
+//} car_struct_t;
 
 #endif /* MOTOR_CONFIG_H */
