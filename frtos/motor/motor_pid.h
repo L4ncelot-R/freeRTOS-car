@@ -8,14 +8,11 @@
 #ifndef MOTOR_PID_H
 #define MOTOR_PID_H
 
-// #include "magnetometer_init.h"
-
 /*!
  * @brief Compute the control signal using PID controller
- * @param target_speed The target speed of the wheel
- * @param current_speed The current speed of the wheel
  * @param integral The integral term of the PID controller
  * @param prev_error The previous error of the PID controller
+ * @param car_struct The car_struct pointer
  * @return The control signal
  */
 float
@@ -38,10 +35,15 @@ compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
     return control_signal;
 }
 
+/*!
+ * @brief Repeating timer handler for the PID controller
+ * @param ppp_timer The repeating timer
+ * @return true
+ */
 bool
-repeating_pid_handler(struct repeating_timer *t)
+repeating_pid_handler(struct repeating_timer *ppp_timer)
 {
-    car_struct_t *car_strut = (car_struct_t *)t->user_data;
+    car_struct_t *car_strut = (car_struct_t *)ppp_timer->user_data;
 
     static float integral   = 0.0f;
     static float prev_error = 0.0f;

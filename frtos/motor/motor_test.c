@@ -22,8 +22,13 @@ motor_control_task(void *params)
     }
 }
 
+/*!
+ * @brief init the tasks for the motor
+ * @param pp_car_struct The car struct
+ * @param p_isr_handler The isr handler
+ */
 void
-launch(car_struct_t *car_struct, void *isr_handler)
+motor_tasks_init(car_struct_t *pp_car_struct, void *p_isr_handler)
 {
     // Left wheel
     //
@@ -31,7 +36,7 @@ launch(car_struct_t *car_struct, void *isr_handler)
     xTaskCreate(monitor_wheel_speed_task,
                 "monitor_left_wheel_speed_task",
                 configMINIMAL_STACK_SIZE,
-                (void *)car_struct->p_left_motor,
+                (void *)pp_car_struct->p_left_motor,
                 WHEEL_SPEED_PRIO,
                 &h_monitor_left_wheel_speed_task_handle);
 
@@ -41,7 +46,7 @@ launch(car_struct_t *car_struct, void *isr_handler)
     xTaskCreate(monitor_wheel_speed_task,
                 "monitor_wheel_speed_task",
                 configMINIMAL_STACK_SIZE,
-                (void *)car_struct->p_right_motor,
+                (void *)pp_car_struct->p_right_motor,
                 WHEEL_SPEED_PRIO,
                 &h_monitor_right_wheel_speed_task_handle);
 
@@ -50,17 +55,17 @@ launch(car_struct_t *car_struct, void *isr_handler)
     xTaskCreate(motor_control_task,
                 "motor_turning_task",
                 configMINIMAL_STACK_SIZE,
-                (void *)car_struct,
+                (void *)pp_car_struct,
                 WHEEL_CONTROL_PRIO,
                 &h_motor_turning_task_handle);
 
     // isr to detect right motor slot
     gpio_set_irq_enabled(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL, true);
-    gpio_add_raw_irq_handler(SPEED_PIN_RIGHT, isr_handler);
+    gpio_add_raw_irq_handler(SPEED_PIN_RIGHT, p_isr_handler);
 
     // isr to detect left motor slot
     gpio_set_irq_enabled(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL, true);
-    gpio_add_raw_irq_handler(SPEED_PIN_LEFT, isr_handler);
+    gpio_add_raw_irq_handler(SPEED_PIN_LEFT, p_isr_handler);
 
     irq_set_enabled(IO_IRQ_BANK0, true);
 }
@@ -73,17 +78,17 @@ main(void)
     sleep_ms(4000);
     printf("Test started!\n");
 
-    motor_t     g_motor_right;
-    motor_t     g_motor_left;
-    motor_pid_t g_pid;
+    motor_t     motor_right;
+    motor_t     motor_left;
+    motor_pid_t pid;
 
-    car_struct_t car_struct = { .p_right_motor = &g_motor_right,
-                                .p_left_motor  = &g_motor_left,
-                                .p_pid         = &g_pid };
+    car_struct_t car_struct = { .p_right_motor = &motor_right,
+                                .p_left_motor  = &motor_left,
+                                .p_pid         = &pid };
 
     motor_init(&car_struct);
 
-    launch(&car_struct, &h_wheel_sensor_isr_handler);
+    motor_tasks_init(&car_struct, &h_wheel_sensor_isr_handler);
 
     // PID timer
     struct repeating_timer pid_timer;

@@ -38,14 +38,14 @@ h_wheel_sensor_isr_handler(void)
 
 /*!
  * @brief Task to monitor and control the speed of the wheel
- * @param pvParameters motor_speed_t struct pointer
+ * @param ppp_motor motor_speed_t struct pointer
  * @see motor_speed_t
  */
 void
-monitor_wheel_speed_task(void *pvParameters)
+monitor_wheel_speed_task(void *ppp_motor)
 {
     volatile motor_t *p_motor = NULL;
-    p_motor                   = (motor_t *)pvParameters;
+    p_motor                   = (motor_t *)ppp_motor;
 
     uint64_t curr_time    = 0u;
     uint64_t prev_time    = 0u;
@@ -76,30 +76,35 @@ monitor_wheel_speed_task(void *pvParameters)
     }
 }
 
-void
-set_wheel_speed(uint32_t pwm_level, motor_t * motor)
-{
-    motor->pwm.level = pwm_level;
-
-    pwm_set_chan_level(motor->pwm.slice_num,
-                       motor->pwm.channel,
-                       motor->pwm.level);
-}
-
 /*!
  * @brief Set the speed of the wheels
  * @param pwm_level The pwm_level of the wheels, from 0 to 99
+ * @param p_motor The motor to set the speed
  */
 void
-set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *car_strut)
+set_wheel_speed(uint32_t pwm_level, motor_t *p_motor)
 {
     if (pwm_level > MAX_PWM_LEVEL)
     {
         pwm_level = MAX_PWM_LEVEL;
     }
 
-    set_wheel_speed(pwm_level, car_strut->p_left_motor);
-    set_wheel_speed(pwm_level, car_strut->p_right_motor);
+    p_motor->pwm.level = pwm_level;
+
+    pwm_set_chan_level(
+        p_motor->pwm.slice_num, p_motor->pwm.channel, p_motor->pwm.level);
+}
+
+/*!
+ * @brief Set the speed of the wheels
+ * @param pwm_level The pwm_level of the wheels, from 0 to 99
+ * @param pp_car_strut The car struct pointer
+ */
+void
+set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *pp_car_strut)
+{
+    set_wheel_speed(pwm_level, pp_car_strut->p_left_motor);
+    set_wheel_speed(pwm_level, pp_car_strut->p_right_motor);
 }
 
 ///*!

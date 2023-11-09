@@ -19,6 +19,13 @@
 
 #include "motor_config.h"
 
+/*!
+ * @brief Initialize the motor
+ * @param car_struct The car_struct. Need to have the following fields:\n
+ *                  - p_left_motor\n
+ *                  - p_right_motor\n
+ *                  - p_pid
+ */
 void
 motor_init(car_struct_t *car_struct)
 {
