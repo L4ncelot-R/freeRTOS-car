@@ -340,7 +340,7 @@ void updateDirection() {
     // Temperature in degrees Celsius
 //    printf("Temperature: %d\n", temperature[0]);
 
-    print_orientation_data();
+//    print_orientation_data();
 
 //    printf("Direction: ");
 

@@ -3,9 +3,14 @@
 
 /* ADC Configuration */
 
-#define TRIG_PIN                                ( 2 )
-#define ECHO_PIN                                ( 3 )
+#define TRIG_PIN (2)
+#define ECHO_PIN (3)
 
-#define ULTRASONIC_SENSOR_READ_DELAY            ( 500 )
+#define ULTRASONIC_SENSOR_READ_DELAY (100)
 
-#endif //ULTRASONIC_CONFIG_H
+typedef struct
+{
+    bool obstacle_detected;
+} ultrasonic_t;
+
+#endif // ULTRASONIC_CONFIG_H

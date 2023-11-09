@@ -12,6 +12,8 @@ target_link_libraries(
 
 target_include_directories(line_sensor_test
         PRIVATE ../config
+        ../car
+        ../ultrasonic_sensor
 )
 
 pico_enable_stdio_usb(line_sensor_test 1)
