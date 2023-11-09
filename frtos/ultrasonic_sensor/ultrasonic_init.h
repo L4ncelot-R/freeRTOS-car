@@ -11,6 +11,8 @@
 #include "pico/stdlib.h"
 #include "ultrasonic_sensor_config.h"
 
+ultrasonic_t ultrasonic_sensor = { .obstacle_detected = false };
+
 void
 init_ultrasonic(void)
 {

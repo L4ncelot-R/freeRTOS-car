@@ -8,12 +8,12 @@
 void
 vLaunch(void)
 {   
-    gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, echo_handler);
+    // gpio_set_irq_enabled_with_callback(ECHO_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, echo_handler);
 
-    irq_set_enabled(IO_IRQ_BANK0, true);
+    // irq_set_enabled(IO_IRQ_BANK0, true);
 
     TaskHandle_t disttask;
-    xTaskCreate(distance_task,
+    xTaskCreate(check_obstacle,
                 "TestDistThread",
                 configMINIMAL_STACK_SIZE,
                 NULL,
