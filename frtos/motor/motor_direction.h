@@ -77,11 +77,11 @@ check_direction(float current_direction, float target_direction, float range)
 void
 spin_to_yaw(uint32_t direction, float target_yaw, car_struct_t *pp_car_struct)
 {
+    pp_car_struct->p_pid->use_pid = false;
+
     set_wheel_direction(direction);
 
     set_wheel_speed_synced(80u, pp_car_struct);
-
-    pp_car_struct->p_pid->use_pid = false;
 
     for (;;)
     {
@@ -101,18 +101,26 @@ spin_to_yaw(uint32_t direction, float target_yaw, car_struct_t *pp_car_struct)
 void
 spin_right(float degree, car_struct_t *pp_car_struct)
 {
+    set_wheel_direction(DIRECTION_MASK);
+    vTaskDelay(pdMS_TO_TICKS(50));
+
     updateDirection();
     float initial_yaw = g_direction.yaw;
     float target_yaw  = adjust_yaw(initial_yaw + degree);
+
     spin_to_yaw(DIRECTION_RIGHT, target_yaw, pp_car_struct);
 }
 
 void
 spin_left(float degree, car_struct_t *pp_car_struct)
 {
+    set_wheel_direction(DIRECTION_MASK);
+    vTaskDelay(pdMS_TO_TICKS(50));
+
     updateDirection();
     float initial_yaw = g_direction.yaw;
     float target_yaw  = adjust_yaw(initial_yaw - degree);
+
     spin_to_yaw(DIRECTION_LEFT, target_yaw, pp_car_struct);
 }
 
