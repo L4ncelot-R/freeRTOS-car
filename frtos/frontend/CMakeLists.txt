@@ -24,8 +24,9 @@ target_link_libraries(
         frontend
         hardware_adc
         pico_stdlib
-        #FreeRTOS-Kernel-Heap4 # FreeRTOS kernel and dynamic heap
-        pico_cyw43_arch_lwip_threadsafe_background
+        FreeRTOS-Kernel-Heap4 # FreeRTOS kernel and dynamic heap
+        #pico_cyw43_arch_lwip_threadsafe_background
+        pico_cyw43_arch_lwip_sys_freertos
         pico_lwip_http
         )
 
