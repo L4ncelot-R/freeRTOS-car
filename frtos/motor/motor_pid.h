@@ -31,9 +31,9 @@ compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
     float derivative = error - *prev_error;
 
     float control_signal
-        = car_struct->p_right_motor->p_pid->kp_value * error
-          + car_struct->p_right_motor->p_pid->ki_value * (*integral)
-          + car_struct->p_right_motor->p_pid->kd_value * derivative;
+        = car_struct->p_pid->kp_value * error
+          + car_struct->p_pid->ki_value * (*integral)
+          + car_struct->p_pid->kd_value * derivative;
 
     *prev_error = error;
 
@@ -48,7 +48,7 @@ repeating_pid_handler(struct repeating_timer *t)
     static float integral   = 0.0f;
     static float prev_error = 0.0f;
 
-    if (!car_strut->p_right_motor->p_pid->use_pid)
+    if (!car_strut->p_pid->use_pid)
     {
         return true;
     }

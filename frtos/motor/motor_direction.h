@@ -85,7 +85,7 @@ spin_to_yaw(float target_yaw, car_struct_t *car_struct)
 
     set_wheel_speed_synced(80u, car_struct);
 
-    car_struct->p_right_motor->p_pid->use_pid = false;
+    car_struct->p_pid->use_pid = false;
 
     for (;;)
     {
@@ -98,7 +98,7 @@ spin_to_yaw(float target_yaw, car_struct_t *car_struct)
         }
     }
 
-    car_struct->p_right_motor->p_pid->use_pid = true;
+    car_struct->p_pid->use_pid = true;
     vTaskDelay(pdMS_TO_TICKS(50));
 }
 

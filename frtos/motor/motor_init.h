@@ -19,29 +19,32 @@
 
 #include "motor_config.h"
 
-//motor_t g_motor_left  = { .pwm.level         = 0u,
-//                          .pwm.channel       = PWM_CHAN_A,
-//                          .speed.distance_cm = 0.0f };
-//
-//// classic ziegler nichols method
-//// Ku = 1000, Tu = 0.9s, interval = 0.05s
-//// Kp = 0.6 * Ku = 600
-//// Ki = 2 * Kp * 0.05 / Tu = 66.67
-//// Kd = Kp * Tu * 0.05 / 8 = 1350
-//motor_t g_motor_right = { .pwm.level         = 0u,
-//                          .pwm.channel       = PWM_CHAN_B,
-//                          .speed.distance_cm = 0.0f,
-//                          .p_pid.kp_value      = 600.f,
-//                          .p_pid.ki_value      = 66.67f,
-//                          .p_pid.kd_value      = 1350.f,};
-
 void
-motor_init(car_struct_t * car_struct)
+motor_init(car_struct_t *car_struct)
 {
     // Semaphore
     g_left_sem  = xSemaphoreCreateBinary();
     g_right_sem = xSemaphoreCreateBinary();
 
+    car_struct->p_pid->use_pid  = true;
+    car_struct->p_pid->kp_value = 600.f;
+    car_struct->p_pid->ki_value = 66.67f;
+    car_struct->p_pid->kd_value = 1350.f;
+
+    // initialize the car_struct
+    car_struct->p_left_motor->pwm.level         = 0u;
+    car_struct->p_left_motor->pwm.channel       = PWM_CHAN_A;
+    car_struct->p_left_motor->speed.distance_cm = 0.0f;
+    car_struct->p_left_motor->p_sem             = &g_left_sem;
+    car_struct->p_left_motor->use_pid           = &car_struct->p_pid->use_pid;
+
+    car_struct->p_right_motor->pwm.level         = 0u;
+    car_struct->p_right_motor->pwm.channel       = PWM_CHAN_B;
+    car_struct->p_right_motor->speed.distance_cm = 0.0f;
+    car_struct->p_right_motor->p_sem             = &g_right_sem;
+    car_struct->p_right_motor->use_pid           = &car_struct->p_pid->use_pid;
+
+    // Initialize speed pins as inputs
     gpio_init(SPEED_PIN_RIGHT);
     gpio_init(SPEED_PIN_LEFT);
     gpio_set_dir(SPEED_PIN_RIGHT, GPIO_IN);
@@ -62,10 +65,10 @@ motor_init(car_struct_t * car_struct)
     gpio_set_function(PWM_PIN_LEFT, GPIO_FUNC_PWM);
     gpio_set_function(PWM_PIN_RIGHT, GPIO_FUNC_PWM);
 
-    car_struct->p_left_motor->pwm.slice_num  = pwm_gpio_to_slice_num
-        (PWM_PIN_LEFT);
-    car_struct->p_right_motor->pwm.slice_num = pwm_gpio_to_slice_num
-        (PWM_PIN_RIGHT);
+    car_struct->p_left_motor->pwm.slice_num
+        = pwm_gpio_to_slice_num(PWM_PIN_LEFT);
+    car_struct->p_right_motor->pwm.slice_num
+        = pwm_gpio_to_slice_num(PWM_PIN_RIGHT);
 
     // NOTE: PWM clock is 125MHz for raspberrypi pico w by default
 

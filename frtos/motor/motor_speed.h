@@ -54,7 +54,7 @@ monitor_wheel_speed_task(void *pvParameters)
     for (;;)
     {
         if ((xSemaphoreTake(*p_motor->p_sem, pdMS_TO_TICKS(100))
-            == pdTRUE) && (p_motor->p_pid->use_pid == true))
+            == pdTRUE) && (*p_motor->use_pid == true))
         {
             curr_time    = time_us_64();
             elapsed_time = curr_time - prev_time;

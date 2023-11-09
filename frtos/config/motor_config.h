@@ -85,10 +85,11 @@ typedef struct
  */
 typedef struct
 {
-    motor_speed_t      speed;
-    motor_pwm_t        pwm;
-    SemaphoreHandle_t *p_sem;
-    motor_pid_t       *p_pid;
+    motor_speed_t       speed;
+    motor_pwm_t         pwm;
+    SemaphoreHandle_t * p_sem;
+    bool              * use_pid;
+
 } motor_t;
 
 typedef struct
@@ -103,8 +104,9 @@ SemaphoreHandle_t g_right_sem;
 
 typedef struct
 {
-    motor_t     *p_left_motor;
-    motor_t     *p_right_motor;
+    motor_t     * p_left_motor;
+    motor_t     * p_right_motor;
+    motor_pid_t * p_pid;
 
 } car_struct_t;
 
