@@ -51,6 +51,47 @@ KalmanFilter(float U)
 //     }
 // }
 
+bool obstacle_detected = false;
+
+void check_obstacle() {
+   // Put trigger pin high for 10us
+        gpio_put(TRIG_PIN, 1);
+        sleep_us(10);
+        gpio_put(TRIG_PIN, 0);
+
+        // Wait for echo pin to go high
+        while (gpio_get(ECHO_PIN) == 0)
+            tight_loop_contents();
+
+        // Measure the pulse width (time taken for the echo to return)
+        uint32_t start_time = time_us_32();
+        while (gpio_get(ECHO_PIN) == 1)
+            tight_loop_contents();
+
+        uint32_t end_time = time_us_32();
+
+        // Calculate the distance (in centimeters)
+        uint32_t pulse_duration = end_time - start_time;
+        float    distance
+            = (pulse_duration * 0.034 / 2); // Speed of sound in cm/us
+
+        printf("Distance: %.2f cm\n", distance);
+
+        obstacle_detected = (distance < 7);
+}
+
+void distance_task_two(__unused void *params)
+{
+        for(;;)
+        {
+            // Semaphore to release the task every 100ms
+            if (xSemaphoreTake(distance_semaphore, portMAX_DELAY))
+            {
+                check_obstacle();
+            }
+        }
+}
+
 void
 distance_task(__unused void *params)
 {
