@@ -18,6 +18,7 @@
 #include "semphr.h"
 
 #include "line_sensor_config.h"
+#include "car_config.h"
 
 // Semaphore
 SemaphoreHandle_t g_left_sensor_sem = NULL;
@@ -28,10 +29,10 @@ SemaphoreHandle_t g_left_sensor_sem = NULL;
  * This function will setup the Line Sensor by initializing it as an input
  */
 static inline void
-line_sensor_init(line_car_struct_t *p_car) {
-    obs_t obs = {1, 0};
-
-    p_car->obs = &obs;
+line_sensor_init() {
+//    obs_t obs = {0, 0};
+//
+//    p_car->obs = &obs;
 
     g_left_sensor_sem = xSemaphoreCreateBinary();
 
@@ -65,12 +66,13 @@ monitor_left_sensor_task(void *pvParameters) {
 
     for (;;)
     {
-        if (xSemaphoreTake(g_left_sensor_sem, portMAX_DELAY) == pdTRUE)
-        {
+//        if (xSemaphoreTake(g_left_sensor_sem, portMAX_DELAY) == pdTRUE)
+//        {
             // Set the flag to notify the task
             p_obs->line_detected = gpio_get(LEFT_SENSOR_PIN);
             printf("Left Sensor: %d\n", p_obs->line_detected);
-        }
+            vTaskDelay(pdMS_TO_TICKS(LINE_SENSOR_READ_DELAY));
+//        }
     }
 }
 
