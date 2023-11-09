@@ -3,6 +3,8 @@
  * @brief monitor and update the speed of the wheels
  * @author Richie
  */
+#ifndef MOTOR_SPEED_H
+#define MOTOR_SPEED_H
 
 #include "motor_init.h"
 
@@ -17,7 +19,7 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_motor_left.sem,
+        xSemaphoreGiveFromISR(g_left_sem,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
@@ -27,7 +29,7 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_motor_right.sem,
+        xSemaphoreGiveFromISR(g_right_sem,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
@@ -51,8 +53,8 @@ monitor_wheel_speed_task(void *pvParameters)
 
     for (;;)
     {
-        if (xSemaphoreTake(p_motor->sem, pdMS_TO_TICKS(100))
-            == pdTRUE)
+        if ((xSemaphoreTake(*p_motor->p_sem, pdMS_TO_TICKS(100))
+            == pdTRUE) && (*p_motor->use_pid == true))
         {
             curr_time    = time_us_64();
             elapsed_time = curr_time - prev_time;
@@ -73,3 +75,54 @@ monitor_wheel_speed_task(void *pvParameters)
         }
     }
 }
+
+void
+set_wheel_speed(uint32_t pwm_level, motor_t * motor)
+{
+    motor->pwm.level = pwm_level;
+
+    pwm_set_chan_level(motor->pwm.slice_num,
+                       motor->pwm.channel,
+                       motor->pwm.level);
+}
+
+/*!
+ * @brief Set the speed of the wheels
+ * @param pwm_level The pwm_level of the wheels, from 0 to 99
+ */
+void
+set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *car_strut)
+{
+    if (pwm_level > MAX_PWM_LEVEL)
+    {
+        pwm_level = MAX_PWM_LEVEL;
+    }
+
+    set_wheel_speed(pwm_level, car_strut->p_left_motor);
+    set_wheel_speed(pwm_level, car_strut->p_right_motor);
+}
+
+///*!
+// * @brief Set the distance to travel before stopping, must be called after
+// * setting the speed and direction.
+// * @param distance_cm distance to travel in cm
+// */
+//void
+//distance_to_stop(float distance_cm)
+//{
+//    float initial = g_motor_right.speed.distance_cm;
+//
+//    for (;;)
+//    {
+//        if (g_motor_right.speed.distance_cm - initial >= distance_cm)
+//        {
+//            set_wheel_speed_synced(0u);
+//            break;
+//        }
+//        vTaskDelay(pdMS_TO_TICKS(10));
+//    }
+//    vTaskDelay(pdMS_TO_TICKS(1000));
+//    g_motor_right.speed.distance_cm = g_motor_left.speed.distance_cm;
+//}
+
+#endif /* MOTOR_SPEED_H */

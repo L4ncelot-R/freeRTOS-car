@@ -24,6 +24,7 @@
 #define MAGNETOMETER_DIRECTION_H
 
 #include "magnetometer_init.h"
+#include "map.h"
 
 /**
  * @brief Roll Calculation with Accelerometer Data
@@ -55,7 +56,7 @@ calculate_pitch(int16_t acceleration[3]) {
  */
 static inline float
 calculate_yaw_magnetometer(int16_t magnetometer[3]) {
-    return atan2(magnetometer[1], magnetometer[0]) * (180.0 / M_PI);
+    return atan2(magnetometer[1], magnetometer[0]) * (180.0f / M_PI);
 }
 
 /**
@@ -64,10 +65,10 @@ calculate_yaw_magnetometer(int16_t magnetometer[3]) {
  * @param yaw_mag   Yaw calculated from Magnetometer Data
  * @return yaw      Yaw calculated from Complementary Filter
  */
-static inline float
-calculate_yaw_complementary(float yaw_acc, float yaw_mag) {
-    return ALPHA * yaw_acc + (1 - ALPHA) * yaw_mag;
-}
+//static inline float
+//calculate_yaw_complementary(float yaw_acc, float yaw_mag) {
+//    return ALPHA * yaw_acc + (1 - ALPHA) * yaw_mag;
+//}
 
 /**
  * @brief Compensate the magnetometer readings for temperature
@@ -78,11 +79,11 @@ calculate_yaw_complementary(float yaw_acc, float yaw_mag) {
 float
 compensate_magnetometer(float yaw_mag, int16_t temperature) {
     // Calculate temperature difference from the reference temperature
-    float delta_temp = (float) (temperature - TEMPERATURE_OFFSET);
+    uint delta_temp = temperature - TEMPERATURE_OFFSET;
 
     // Apply temperature compensation to each axis using macros
     float compensated_yaw_mag =
-            yaw_mag - (delta_temp * TEMPERATURE_COEFFICIENT_Z);
+            yaw_mag - ((float) delta_temp * TEMPERATURE_COEFFICIENT_Z);
 
     // Apply scale and offset corrections using macros
     compensated_yaw_mag = (compensated_yaw_mag - OFFSET_Z) * SCALE_Z;
@@ -97,7 +98,17 @@ compensate_magnetometer(float yaw_mag, int16_t temperature) {
  */
 static inline float
 adjust_yaw(float yaw) {
-    return (yaw < 0) ? yaw + 360.0f : yaw;
+    if (yaw < 0)
+    {
+        yaw += 360;
+    }
+
+    if (yaw > 360)
+    {
+        yaw -= 360;
+    }
+
+    return yaw;
 }
 
 /**
@@ -106,33 +117,86 @@ adjust_yaw(float yaw) {
  * the compass direction enum
  * 45.0 = 360 / 8, used to calculate the compass direction from
  * the orientation (0 - 7)
- * @param yaw   Yaw calculated from Complementary Filter
+ * @param yaw   Yaw calculated
  * @return      Compass Direction
  */
 static inline compass_direction_t
 calculate_compass_direction(float yaw) {
-    int orientation = (int) ((yaw + 22.5) / 45.0) % 8; // 8 compass directions
-    switch (orientation)
+    if (yaw >= 337.5 || yaw < 22.5)
     {
-        case 0:
-            return NORTH;
-        case 1:
-            return NORTH_EAST;
-        case 2:
-            return EAST;
-        case 3:
-            return SOUTH_EAST;
-        case 4:
-            return SOUTH;
-        case 5:
-            return SOUTH_WEST;
-        case 6:
-            return WEST;
-        case 7:
-            return NORTH_WEST;
-        default:
-            return NORTH;
+        return NORTH;
     }
+    else
+    {
+        if (yaw >= 22.5 && yaw < 67.5)
+        {
+            return NORTH_EAST;
+        }
+        else
+        {
+            if (yaw >= 67.5 && yaw < 112.5)
+            {
+                return EAST;
+            }
+            else
+            {
+                if (yaw >= 112.5 && yaw < 157.5)
+                {
+                    return SOUTH_EAST;
+                }
+                else
+                {
+                    if (yaw >= 157.5 && yaw < 202.5)
+                    {
+                        return SOUTH;
+                    }
+                    else
+                    {
+                        if (yaw >= 202.5 && yaw < 247.5)
+                        {
+                            return SOUTH_WEST;
+                        }
+                        else
+                        {
+                            if (yaw >= 247.5 && yaw < 292.5)
+                            {
+                                return WEST;
+                            }
+                            else
+                            {
+                                if (yaw >= 292.5 && yaw < 337.5)
+                                {
+                                    return NORTH_WEST;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+//    int orientation = (int) ((yaw + 22.5) / 45.0) % 8; // 8 compass directions
+//    switch (orientation)
+//    {
+//        case 0:
+//            return NORTH;
+//        case 1:
+//            return NORTH_EAST;
+//        case 2:
+//            return EAST;
+//        case 3:
+//            return SOUTH_EAST;
+//        case 4:
+//            return SOUTH;
+//        case 5:
+//            return SOUTH_WEST;
+//        case 6:
+//            return WEST;
+//        case 7:
+//            return NORTH_WEST;
+//        default:
+//            return NORTH;
+//    }
 }
 
 /**
@@ -161,26 +225,33 @@ update_orientation_data(float roll, float pitch, float yaw,
  * @param magnetometer  Magnetometer Data
  */
 static void
-read_direction(int16_t acceleration[3],
-               int16_t magnetometer[3],
-               int16_t temperature[1]) {
+read_direction(int16_t acceleration[3], int16_t magnetometer[3]) {
 
     float roll = calculate_roll(acceleration);
     float pitch = calculate_pitch(acceleration);
     float yaw_mag = calculate_yaw_magnetometer(magnetometer);
 
+    yaw_mag = adjust_yaw(yaw_mag);
+
     // Apply temperature compensation to the magnetometer data
-    float compensated_mag_yaw = compensate_magnetometer(yaw_mag,
-                                                        temperature[0]);
+//    float compensated_mag_yaw = compensate_magnetometer(yaw_mag,
+//                                                        temperature[0]);
+//    compensated_mag_yaw = adjust_yaw(compensated_mag_yaw);
 
-    float yaw_acc = atan2(acceleration[1], acceleration[0]) * (180.0 / M_PI);
-    float yaw = calculate_yaw_complementary(yaw_acc, compensated_mag_yaw);
+//    float yaw_acc = atan2(acceleration[1], acceleration[0]) * (180.0f / M_PI);
+//    yaw_acc = adjust_yaw(yaw_acc);
+//
+//    float yaw = calculate_yaw_complementary(yaw_acc, yaw_mag);
 
-    yaw = adjust_yaw(yaw);
+//    yaw = adjust_yaw(yaw);
+//    printf("Yaw: %f\n", yaw);
 
-    compass_direction_t compass_direction = calculate_compass_direction(yaw);
+    compass_direction_t compass_direction = calculate_compass_direction(yaw_mag);
 
-    update_orientation_data(roll, pitch, yaw, compass_direction);
+    update_orientation_data(roll,
+                            pitch,
+                            yaw_mag,
+                            compass_direction);
 }
 
 /**
@@ -192,7 +263,8 @@ read_direction(int16_t acceleration[3],
  * @param params
  */
 void print_orientation_data() {
-    printf("Roll: %f, Pitch: %f, Yaw: %f\n",
+//    printf("Roll: %f, Pitch: %f, Yaw: %f\n",
+           printf("%f %f %f\n",
            g_direction.roll,
            g_direction.pitch,
            g_direction.yaw
@@ -251,34 +323,80 @@ void print_roll_and_pitch(angle_t roll_angle, angle_t pitch_angle) {
     }
 }
 
+void updateDirection() {
+    int16_t magnetometer[3];
+    int16_t accelerometer[3];
+    int16_t temperature[1];
+
+    static int cur_x = 0;
+    static int cur_y = 0;
+
+    read_magnetometer(magnetometer);
+    read_accelerometer(accelerometer);
+    read_temperature(temperature);
+
+    read_direction(accelerometer, magnetometer);
+
+    // Temperature in degrees Celsius
+//    printf("Temperature: %d\n", temperature[0]);
+
+    print_orientation_data();
+
+//    printf("Direction: ");
+
+//    print_direction(g_direction.orientation);
+
+    switch (g_direction.orientation)
+    {
+        case NORTH:
+            cur_y ++;
+            break;
+        case EAST:
+            cur_x ++;
+            break;
+        case SOUTH:
+            cur_y --;
+            break;
+        case WEST:
+            cur_x --;
+            break;
+        case NORTH_EAST:
+            cur_x ++;
+            cur_y ++;
+            break;
+        case SOUTH_EAST:
+            cur_x ++;
+            cur_y --;
+            break;
+        case SOUTH_WEST:
+            cur_x --;
+            cur_y --;
+            break;
+        case NORTH_WEST:
+            cur_x --;
+            cur_y ++;
+            break;
+    }
+
+    // Update the map based on the direction of the car (N, E, S, W)
+//    update_map(g_direction.orientation, cur_x, cur_y);
+
+//    printf("Current Position: (%d, %d)\n", cur_x, cur_y);
+//    print_map();
+
+//    print_roll_and_pitch(g_direction.roll_angle, g_direction.pitch_angle);
+}
+
+
 void monitor_direction_task(__unused void *params) {
     for (;;)
     {
         if (xSemaphoreTake(g_direction_sem, portMAX_DELAY) == pdTRUE)
         {
-            int16_t magnetometer[3];
-            int16_t accelerometer[3];
-            int16_t temperature[1];
-
-            read_magnetometer(magnetometer);
-            read_accelerometer(accelerometer);
-            read_temperature(temperature);
-
-            read_direction(accelerometer, magnetometer, temperature);
-
-            // Temperature in degrees Celsius
-            printf("Temperature: %d\n", temperature[0]);
-
-            print_orientation_data();
-
-            printf("Direction: ");
-
-            print_direction(g_direction.orientation);
-
-            print_roll_and_pitch(g_direction.roll_angle,
-                                 g_direction.pitch_angle);
+            updateDirection();
         }
     }
 }
+
 
 #endif

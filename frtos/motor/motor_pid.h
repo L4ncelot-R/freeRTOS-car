@@ -5,7 +5,10 @@
  * @author Richie
  */
 
-#include "motor_init.h"
+#ifndef MOTOR_PID_H
+#define MOTOR_PID_H
+
+// #include "magnetometer_init.h"
 
 /*!
  * @brief Compute the control signal using PID controller
@@ -16,62 +19,56 @@
  * @return The control signal
  */
 float
-compute_pid(float *integral, float *prev_error)
+compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
 {
-    float error
-        = g_motor_left.speed.distance_cm - g_motor_right.speed.distance_cm;
+    float error = car_struct->p_left_motor->speed.distance_cm
+                  - car_struct->p_right_motor->speed.distance_cm;
 
     *integral += error;
 
     float derivative = error - *prev_error;
 
-    float control_signal = g_motor_right.pid.kp_value * error
-                           + g_motor_right.pid.ki_value * (*integral)
-                           + g_motor_right.pid.kd_value * derivative;
+    float control_signal
+        = car_struct->p_pid->kp_value * error
+          + car_struct->p_pid->ki_value * (*integral)
+          + car_struct->p_pid->kd_value * derivative;
 
     *prev_error = error;
 
     return control_signal;
 }
 
-void
-motor_pid_task(__unused void *p_param)
+bool
+repeating_pid_handler(struct repeating_timer *t)
 {
-    float integral   = 0.0f;
-    float prev_error = 0.0f;
+    car_struct_t *car_strut = (car_struct_t *)t->user_data;
 
-    for (;;)
+    static float integral   = 0.0f;
+    static float prev_error = 0.0f;
+
+    if (!car_strut->p_pid->use_pid)
     {
-        if (g_motor_left.pwm.level == 0u)
-        {
-            g_motor_right.pwm.level = 0;
-            pwm_set_chan_level(g_motor_right.pwm.slice_num,
-                               g_motor_right.pwm.channel,
-                               g_motor_right.pwm.level);
-            vTaskDelay(pdMS_TO_TICKS(50));
-            continue;
-        }
-
-        float control_signal = compute_pid(&integral, &prev_error);
-
-        float temp = (float) g_motor_right.pwm.level + control_signal * 0.05f;
-
-        if (temp > MAX_SPEED)
-        {
-            temp = MAX_SPEED;
-        }
-
-        if (temp < MIN_SPEED)
-        {
-            temp = MIN_SPEED;
-        }
-
-        g_motor_right.pwm.level = (uint16_t) temp;
-
-        pwm_set_chan_level(g_motor_right.pwm.slice_num,
-                           g_motor_right.pwm.channel,
-                           g_motor_right.pwm.level);
-
-        vTaskDelay(pdMS_TO_TICKS(50));
+        return true;
     }
+
+    float control_signal = compute_pid(&integral, &prev_error, car_strut);
+
+    float temp
+        = (float)car_strut->p_right_motor->pwm.level + control_signal * 0.05f;
+
+    if (temp > MAX_PWM_LEVEL)
+    {
+        temp = MAX_PWM_LEVEL;
+    }
+
+    if (temp <= MIN_PWM_LEVEL)
+    {
+        temp = MIN_PWM_LEVEL + 1u;
+    }
+
+    set_wheel_speed((uint32_t)temp, car_strut->p_right_motor);
+
+    return true;
 }
+
+#endif /* MOTOR_PID_H */

@@ -3,8 +3,8 @@
 
 /* ADC Configuration */
 
-#define TRIG_PIN                                ( 0 )
-#define ECHO_PIN                                ( 1 )
+#define TRIG_PIN                                ( 2 )
+#define ECHO_PIN                                ( 3 )
 
 #define ULTRASONIC_SENSOR_READ_DELAY            ( 500 )
 

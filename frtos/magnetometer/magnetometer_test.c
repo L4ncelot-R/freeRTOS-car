@@ -2,6 +2,7 @@
 #include "magnetometer_init.h"
 #include "magnetometer_read.h"
 #include "magnetometer_direction.h"
+#include "map.h"
 
 #define DIRECTION_TASK_PRIORITY             (tskIDLE_PRIORITY + 1UL)
 
@@ -30,9 +31,11 @@ main (void)
 {
     stdio_usb_init();
 
-//    sleep_ms(2000);
+    int grid_rows = 10;  // Define the number of rows in your grid
+    int grid_cols = 10;  // Define the number of columns in your grid
 
-//    printf("Test started!\n");
+    car_path_grid = create_grid(grid_rows, grid_cols);
+
     magnetometer_init();
 
     launch();
