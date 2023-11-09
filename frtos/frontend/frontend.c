@@ -4,10 +4,8 @@
 #include "lwipopts.h"
 #include "ssi.h"
 #include "cgi.h"
-#include "lwip/inet.h"
 #include "FreeRTOS.h"
 #include "task.h"
-//#include "lwip/sockets.h"
 
 // WIFI Credentials - take care if pushing to GitHub!
 const char WIFI_SSID[] = "XXX";
