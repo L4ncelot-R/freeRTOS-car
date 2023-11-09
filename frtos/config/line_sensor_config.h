@@ -7,11 +7,17 @@
 
 #define LEFT_SENSOR_PIN                         ( 26 )
 #define RIGHT_SENSOR_PIN                        ( 27 )
-#define BARCODE_SENSOR_PIN                      ( 22 )
+
+typedef struct s_obs_struct {
+    uint8_t line_detected;
+    bool ultrasonic_detected;
+} obs_t;
 
 
-/* Map */
-#define MAP_START_SYMBOL                        ( 5 )
-#define MAP_SIZE 20
+typedef struct
+{
+    obs_t      *obs;
+
+} line_car_struct_t;
 
 #endif //CONFIG_H
