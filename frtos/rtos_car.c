@@ -4,21 +4,40 @@
 #include "car_config.h"
 #include "motor_init.h"
 
+bool
+check_collision(void *params)
+{
+    car_struct_t *car_struct = (car_struct_t *)params;
+    return !(car_struct->obs->line_detected) ||
+           car_struct->obs->ultrasonic_detected;
+}
+
 void
 motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
     for (;;)
     {
-        set_wheel_direction(DIRECTION_FORWARD);
-        set_wheel_speed_synced(90u, car_struct);
+        if (check_collision(car_struct))
+        {
+            spin_left(90, car_struct);
 
-        vTaskDelay(pdMS_TO_TICKS(10000));
+            if (check_collision(car_struct))
+            {
+                spin_right(180, car_struct);
 
-        revert_wheel_direction();
-        set_wheel_speed_synced(90u, car_struct);
-
-        vTaskDelay(pdMS_TO_TICKS(10000));
+                if (check_collision(car_struct))
+                {
+                    spin_right(90, car_struct);
+                }
+            }
+        }
+        else
+        {
+            set_wheel_direction(DIRECTION_FORWARD);
+            set_wheel_speed_synced(90u, car_struct);
+        }
+        vTaskDelay(pdMS_TO_TICKS(5));
     }
 }
 
