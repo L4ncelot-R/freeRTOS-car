@@ -5,7 +5,7 @@
 #define I2C_SDA  (8)
 #define I2C_SCL  (9)
 
-#define DIRECTION_READ_DELAY (100)
+#define DIRECTION_READ_DELAY (200)
 
 #define NUM_READINGS                            ( 10 ) // Number of readings to
                                                         // take before

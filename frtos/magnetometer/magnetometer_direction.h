@@ -388,7 +388,7 @@ magnetometer_tasks_init(car_struct_t *car_struct)
     xTaskCreate(monitor_direction_task,
                 "Direction Task",
                 configMINIMAL_STACK_SIZE,
-                car_struct,
+                (void *) car_struct->p_direction,
                 PRIO,
                 &h_direction_task);
 }

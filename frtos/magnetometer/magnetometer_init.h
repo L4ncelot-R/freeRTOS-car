@@ -299,6 +299,7 @@ magnetometer_init(car_struct_t *p_car_struct)
     p_car_struct->p_direction->roll_angle  = LEFT;
     p_car_struct->p_direction->pitch_angle = UP;
 
+    printf("Magnetometer Initialising\n");
     i2c_init(I2C_PORT, 400 * 1000);
 
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);

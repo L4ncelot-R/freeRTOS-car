@@ -8,8 +8,7 @@ bool
 check_collision(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
-    return !(car_struct->obs->line_detected) ||
-           car_struct->obs->ultrasonic_detected;
+    return car_struct->obs->line_detected || car_struct->obs->ultrasonic_detected;
 }
 
 void
@@ -18,19 +17,20 @@ motor_control_task(void *params)
     car_struct_t *car_struct = (car_struct_t *)params;
     for (;;)
     {
+        printf("Collision: %d\n", check_collision(car_struct));
         if (check_collision(car_struct))
         {
             spin_left(90, car_struct);
 
-            if (check_collision(car_struct))
-            {
-                spin_right(180, car_struct);
-
-                if (check_collision(car_struct))
-                {
-                    spin_right(90, car_struct);
-                }
-            }
+//            if (check_collision(car_struct))
+//            {
+//                spin_right(180, car_struct);
+//
+//                if (check_collision(car_struct))
+//                {
+//                    spin_right(90, car_struct);
+//                }
+//            }
         }
         else
         {
@@ -52,10 +52,13 @@ main(void)
     motor_t     motor_left;
     motor_pid_t pid;
 
+    direction_t direction;
+
     car_struct_t car_struct = { .p_right_motor = &motor_right,
                                 .p_left_motor  = &motor_left,
                                 .p_pid         = &pid,
-                                .obs = &obs};
+                                .obs = &obs,
+                               .p_direction = &direction};
 
     // ultra
     ultrasonic_init(&car_struct);
@@ -71,6 +74,11 @@ main(void)
     motor_init(&car_struct);
     motor_tasks_init(&car_struct, &h_wheel_sensor_isr_handler);
     printf("Motor initialized!\n");
+
+    // Magnetometer
+    magnetometer_init(&car_struct);
+//    magnetometer_tasks_init(&car_struct);
+    printf("Magnetometer initialized!\n");
 
     // control task
     TaskHandle_t h_motor_turning_task_handle = NULL;
