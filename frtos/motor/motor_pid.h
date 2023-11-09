@@ -19,10 +19,10 @@
  * @return The control signal
  */
 float
-compute_pid(float *integral, float *prev_error)
+compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
 {
-    float error
-        = g_motor_left.speed.distance_cm - g_motor_right.speed.distance_cm;
+    float error = car_struct->p_left_motor->speed.distance_cm
+                  - car_struct->p_right_motor->speed.distance_cm;
 
     printf("%f\n", error);
 
@@ -30,42 +30,35 @@ compute_pid(float *integral, float *prev_error)
 
     float derivative = error - *prev_error;
 
-    float control_signal = g_motor_right.pid.kp_value * error
-                           + g_motor_right.pid.ki_value * (*integral)
-                           + g_motor_right.pid.kd_value * derivative;
+    float control_signal
+        = car_struct->p_right_motor->p_pid->kp_value * error
+          + car_struct->p_right_motor->p_pid->ki_value * (*integral)
+          + car_struct->p_right_motor->p_pid->kd_value * derivative;
 
     *prev_error = error;
 
     return control_signal;
 }
 
-float
-compute_i_controller(float *integral)
-{
-    float error
-        = g_motor_left.speed.distance_cm - g_motor_right.speed.distance_cm;
-
-    printf("%f\n", error);
-
-    *integral += error;
-
-    return g_motor_right.pid.ki_value * (*integral);
-}
-
 bool
-repeating_pid_handler(__unused struct repeating_timer *t)
+repeating_pid_handler(struct repeating_timer *t)
 {
+    car_struct_t *car_strut = (car_struct_t *)t->user_data;
+
     static float integral   = 0.0f;
     static float prev_error = 0.0f;
 
-    if (!g_use_pid)
+    if (!car_strut->p_right_motor->p_pid->use_pid)
     {
         return true;
     }
 
-    float control_signal = compute_pid(&integral, &prev_error);
+    float control_signal = compute_pid(&integral, &prev_error, car_strut);
 
-    float temp = (float)g_motor_right.pwm.level + control_signal * 0.05f;
+    printf("control: %f\n", control_signal);
+
+    float temp
+        = (float)car_strut->p_right_motor->pwm.level + control_signal * 0.05f;
 
     if (temp > MAX_PWM_LEVEL)
     {
@@ -77,43 +70,12 @@ repeating_pid_handler(__unused struct repeating_timer *t)
         temp = MIN_PWM_LEVEL + 1u;
     }
 
-    g_motor_right.pwm.level = (uint16_t)temp;
-    pwm_set_chan_level(g_motor_right.pwm.slice_num,
-                       g_motor_right.pwm.channel,
-                       g_motor_right.pwm.level);
+    printf("temp: %f\n", temp);
 
-    //    printf("speed: %f cm/s\n", g_motor_right.speed.current_cms);
-    //    printf("distance: %f cm\n", g_motor_right.speed.distance_cm);
+    set_wheel_speed((uint32_t)temp, car_strut->p_right_motor);
 
-    return true;
-}
-
-bool
-repeating_i_handler(__unused struct repeating_timer *t)
-{
-    static float integral = 0.0f;
-
-    if (!g_use_pid)
-    {
-        integral = 0.0f; // reset once disabled
-        return true;
-    }
-
-    float control_signal = compute_i_controller(&integral);
-
-    float temp = (float)g_motor_right.pwm.level + control_signal * 0.05f;
-
-    if (temp > MAX_PWM_LEVEL)
-    {
-        temp = MAX_PWM_LEVEL;
-    }
-
-    if (temp <= MIN_PWM_LEVEL)
-    {
-        temp = MIN_PWM_LEVEL;
-    }
-
-    set_wheel_speed((uint32_t)temp, &g_motor_right);
+    printf("speed: %f cm/s\n", car_strut->p_right_motor->speed.current_cms);
+    printf("distance: %f cm\n", car_strut->p_right_motor->speed.distance_cm);
 
     return true;
 }

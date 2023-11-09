@@ -19,28 +19,28 @@
 
 #include "motor_config.h"
 
-motor_t g_motor_left  = { .pwm.level         = 0u,
-                          .pwm.channel       = PWM_CHAN_A,
-                          .speed.distance_cm = 0.0f };
-
-// classic ziegler nichols method
-// Ku = 1000, Tu = 0.9s, interval = 0.05s
-// Kp = 0.6 * Ku = 600
-// Ki = 2 * Kp * 0.05 / Tu = 66.67
-// Kd = Kp * Tu * 0.05 / 8 = 1350
-motor_t g_motor_right = { .pwm.level         = 0u,
-                          .pwm.channel       = PWM_CHAN_B,
-                          .speed.distance_cm = 0.0f,
-                          .pid.kp_value      = 600.f,
-                          .pid.ki_value      = 66.67f,
-                          .pid.kd_value      = 1350.f,};
+//motor_t g_motor_left  = { .pwm.level         = 0u,
+//                          .pwm.channel       = PWM_CHAN_A,
+//                          .speed.distance_cm = 0.0f };
+//
+//// classic ziegler nichols method
+//// Ku = 1000, Tu = 0.9s, interval = 0.05s
+//// Kp = 0.6 * Ku = 600
+//// Ki = 2 * Kp * 0.05 / Tu = 66.67
+//// Kd = Kp * Tu * 0.05 / 8 = 1350
+//motor_t g_motor_right = { .pwm.level         = 0u,
+//                          .pwm.channel       = PWM_CHAN_B,
+//                          .speed.distance_cm = 0.0f,
+//                          .p_pid.kp_value      = 600.f,
+//                          .p_pid.ki_value      = 66.67f,
+//                          .p_pid.kd_value      = 1350.f,};
 
 void
-motor_init(void)
+motor_init(car_struct_t * car_struct)
 {
     // Semaphore
-    g_motor_left.sem  = xSemaphoreCreateBinary();
-    g_motor_right.sem = xSemaphoreCreateBinary();
+    g_left_sem  = xSemaphoreCreateBinary();
+    g_right_sem = xSemaphoreCreateBinary();
 
     gpio_init(SPEED_PIN_RIGHT);
     gpio_init(SPEED_PIN_LEFT);
@@ -62,22 +62,24 @@ motor_init(void)
     gpio_set_function(PWM_PIN_LEFT, GPIO_FUNC_PWM);
     gpio_set_function(PWM_PIN_RIGHT, GPIO_FUNC_PWM);
 
-    g_motor_left.pwm.slice_num  = pwm_gpio_to_slice_num(PWM_PIN_LEFT);
-    g_motor_right.pwm.slice_num = pwm_gpio_to_slice_num(PWM_PIN_RIGHT);
+    car_struct->p_left_motor->pwm.slice_num  = pwm_gpio_to_slice_num
+        (PWM_PIN_LEFT);
+    car_struct->p_right_motor->pwm.slice_num = pwm_gpio_to_slice_num
+        (PWM_PIN_RIGHT);
 
     // NOTE: PWM clock is 125MHz for raspberrypi pico w by default
 
     // 125MHz / 50 = 2500kHz
-    pwm_set_clkdiv(g_motor_left.pwm.slice_num, PWM_CLK_DIV);
-    pwm_set_clkdiv(g_motor_right.pwm.slice_num, PWM_CLK_DIV);
+    pwm_set_clkdiv(car_struct->p_left_motor->pwm.slice_num, PWM_CLK_DIV);
+    pwm_set_clkdiv(car_struct->p_right_motor->pwm.slice_num, PWM_CLK_DIV);
 
     // L289N can accept up to 40kHz
     // 2500kHz / 100 = 25kHz
-    pwm_set_wrap(g_motor_left.pwm.slice_num, (PWM_WRAP - 1U));
-    pwm_set_wrap(g_motor_right.pwm.slice_num, (PWM_WRAP - 1U));
+    pwm_set_wrap(car_struct->p_left_motor->pwm.slice_num, (PWM_WRAP - 1U));
+    pwm_set_wrap(car_struct->p_right_motor->pwm.slice_num, (PWM_WRAP - 1U));
 
-    pwm_set_enabled(g_motor_left.pwm.slice_num, true);
-    pwm_set_enabled(g_motor_right.pwm.slice_num, true);
+    pwm_set_enabled(car_struct->p_left_motor->pwm.slice_num, true);
+    pwm_set_enabled(car_struct->p_right_motor->pwm.slice_num, true);
 }
 
 #endif /* MOTOR_INIT_H */

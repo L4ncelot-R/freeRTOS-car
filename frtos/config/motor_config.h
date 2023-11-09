@@ -13,17 +13,17 @@
 #define DIRECTION_PIN_LEFT_IN3 19U
 #define DIRECTION_PIN_LEFT_IN4 20U
 
-#define DIRECTION_RIGHT_FORWARD     (1U << DIRECTION_PIN_RIGHT_IN2)
-#define DIRECTION_RIGHT_BACKWARD    (1U << DIRECTION_PIN_RIGHT_IN1)
-#define DIRECTION_LEFT_FORWARD      (1U << DIRECTION_PIN_LEFT_IN4)
-#define DIRECTION_LEFT_BACKWARD     (1U << DIRECTION_PIN_LEFT_IN3)
+#define DIRECTION_RIGHT_FORWARD  (1U << DIRECTION_PIN_RIGHT_IN2)
+#define DIRECTION_RIGHT_BACKWARD (1U << DIRECTION_PIN_RIGHT_IN1)
+#define DIRECTION_LEFT_FORWARD   (1U << DIRECTION_PIN_LEFT_IN4)
+#define DIRECTION_LEFT_BACKWARD  (1U << DIRECTION_PIN_LEFT_IN3)
 
-#define DIRECTION_FORWARD   (DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD)
-#define DIRECTION_BACKWARD  (DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_BACKWARD)
-#define DIRECTION_LEFT      (DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_FORWARD)
-#define DIRECTION_RIGHT     (DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_BACKWARD)
+#define DIRECTION_FORWARD  (DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD)
+#define DIRECTION_BACKWARD (DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_BACKWARD)
+#define DIRECTION_LEFT     (DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_FORWARD)
+#define DIRECTION_RIGHT    (DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_BACKWARD)
 
-#define DIRECTION_MASK  (DIRECTION_FORWARD | DIRECTION_BACKWARD)
+#define DIRECTION_MASK (DIRECTION_FORWARD | DIRECTION_BACKWARD)
 
 #define SPEED_PIN_RIGHT 15U
 #define SPEED_PIN_LEFT  16U
@@ -34,9 +34,9 @@
 #define MAX_PWM_LEVEL 99U
 #define MIN_PWM_LEVEL 0U
 
-#define WHEEL_SPEED_PRIO    (tskIDLE_PRIORITY + 1UL)
-#define WHEEL_CONTROL_PRIO  (tskIDLE_PRIORITY + 1UL)
-#define WHEEL_PID_PRIO      (tskIDLE_PRIORITY + 1UL)
+#define WHEEL_SPEED_PRIO   (tskIDLE_PRIORITY + 1UL)
+#define WHEEL_CONTROL_PRIO (tskIDLE_PRIORITY + 1UL)
+#define WHEEL_PID_PRIO     (tskIDLE_PRIORITY + 1UL)
 
 /*!
  * @brief Structure for the motor speed parameters
@@ -70,6 +70,7 @@ typedef struct
  */
 typedef struct
 {
+    bool  use_pid;
     float kp_value;
     float ki_value;
     float kd_value;
@@ -84,10 +85,10 @@ typedef struct
  */
 typedef struct
 {
-    motor_speed_t     speed;
-    SemaphoreHandle_t sem;
-    motor_pwm_t       pwm;
-    motor_pid_t       pid;
+    motor_speed_t      speed;
+    motor_pwm_t        pwm;
+    SemaphoreHandle_t *p_sem;
+    motor_pid_t       *p_pid;
 } motor_t;
 
 typedef struct
@@ -97,6 +98,14 @@ typedef struct
     volatile bool is_running;
 } distance_to_stop_t;
 
-volatile bool g_use_pid = true;
+SemaphoreHandle_t g_left_sem;
+SemaphoreHandle_t g_right_sem;
+
+typedef struct
+{
+    motor_t     *p_left_motor;
+    motor_t     *p_right_motor;
+
+} car_struct_t;
 
 #endif /* MOTOR_CONFIG_H */

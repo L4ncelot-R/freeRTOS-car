@@ -65,7 +65,7 @@ check_direction(float current_direction, float target_direction, float range)
 }
 
 void
-spin_to_yaw(float target_yaw)
+spin_to_yaw(float target_yaw, car_struct_t *car_struct)
 {
     updateDirection();
     float initial_yaw = g_direction.yaw;
@@ -83,9 +83,9 @@ spin_to_yaw(float target_yaw)
         set_wheel_direction(DIRECTION_LEFT);
     }
 
-    set_wheel_speed_synced(80u);
+    set_wheel_speed_synced(80u, car_struct);
 
-    g_use_pid = false;
+    car_struct->p_right_motor->p_pid->use_pid = false;
 
     for (;;)
     {
@@ -93,12 +93,12 @@ spin_to_yaw(float target_yaw)
         if (check_direction(g_direction.yaw, target_yaw, 1))
         {
             set_wheel_direction(DIRECTION_MASK);
-            set_wheel_speed_synced(0u);
+            set_wheel_speed_synced(0u, car_struct);
             break;
         }
     }
 
-    g_use_pid = true;
+    car_struct->p_right_motor->p_pid->use_pid = true;
     vTaskDelay(pdMS_TO_TICKS(50));
 }
 

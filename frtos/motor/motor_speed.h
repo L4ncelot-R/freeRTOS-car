@@ -19,7 +19,7 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_motor_left.sem,
+        xSemaphoreGiveFromISR(g_left_sem,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
@@ -29,7 +29,7 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_motor_right.sem,
+        xSemaphoreGiveFromISR(g_right_sem,
                               &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
@@ -53,8 +53,8 @@ monitor_wheel_speed_task(void *pvParameters)
 
     for (;;)
     {
-        if ((xSemaphoreTake(p_motor->sem, pdMS_TO_TICKS(100))
-            == pdTRUE) && (g_use_pid == true))
+        if ((xSemaphoreTake(*p_motor->p_sem, pdMS_TO_TICKS(100))
+            == pdTRUE) && (p_motor->p_pid->use_pid == true))
         {
             curr_time    = time_us_64();
             elapsed_time = curr_time - prev_time;
@@ -91,15 +91,15 @@ set_wheel_speed(uint32_t pwm_level, motor_t * motor)
  * @param pwm_level The pwm_level of the wheels, from 0 to 99
  */
 void
-set_wheel_speed_synced(uint32_t pwm_level)
+set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *car_strut)
 {
     if (pwm_level > MAX_PWM_LEVEL)
     {
         pwm_level = MAX_PWM_LEVEL;
     }
 
-    set_wheel_speed(pwm_level, &g_motor_left);
-    set_wheel_speed(pwm_level, &g_motor_right);
+    set_wheel_speed(pwm_level, car_strut->p_left_motor);
+    set_wheel_speed(pwm_level, car_strut->p_right_motor);
 }
 
 ///*!
