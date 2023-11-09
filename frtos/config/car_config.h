@@ -21,6 +21,7 @@ typedef struct
     motor_t     *p_left_motor;
     motor_t     *p_right_motor;
     motor_pid_t *p_pid;
+    direction_t *p_direction;
 
 } car_struct_t;
 

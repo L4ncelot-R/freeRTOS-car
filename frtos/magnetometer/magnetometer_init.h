@@ -23,30 +23,29 @@
 #include "message_buffer.h"
 #include "semphr.h"
 
-#include "magnetometer_config.h"
+#include "car_config.h"
 #include "LSM303DLHC_register.h"
 
 // Semaphores
 SemaphoreHandle_t g_direction_sem = NULL;
 
-direction_t g_direction = {
-        .roll = 0,
-        .pitch = 0,
-        .yaw = 0,
-        .orientation = NORTH,
-        .roll_angle = LEFT,
-        .pitch_angle = UP
-};
+// direction_t g_direction = {
+//         .roll = 0,
+//         .pitch = 0,
+//         .yaw = 0,
+//         .orientation = NORTH,
+//         .roll_angle = LEFT,
+//         .pitch_angle = UP
+// };
 
-struct s_calibration_data {
+struct s_calibration_data
+{
     int16_t accelerometerBias[3];
     int16_t magnetometerBias[3];
 };
 
-struct s_calibration_data g_calibration_data = {
-        .accelerometerBias = {0, 0, 0},
-        .magnetometerBias = {0, 0, 0}
-};
+struct s_calibration_data g_calibration_data
+    = { .accelerometerBias = { 0, 0, 0 }, .magnetometerBias = { 0, 0, 0 } };
 
 /**
  * @brief Read Data with I2C, given the address and register
@@ -55,7 +54,8 @@ struct s_calibration_data g_calibration_data = {
  * @return      1 piece of data read from the register
  */
 static inline int
-read_data(uint8_t addr, uint8_t reg) {
+read_data(uint8_t addr, uint8_t reg)
+{
     uint8_t data[1];
 
     // Send the register address to read from
@@ -72,7 +72,8 @@ read_data(uint8_t addr, uint8_t reg) {
  * @param accelerometer   Accelerometer Data
  */
 static inline void
-read_accelerometer(int16_t accelerometer[3]) {
+read_accelerometer(int16_t accelerometer[3])
+{
     uint8_t buffer[6];
 
     buffer[0] = read_data(ACCEL_ADDR, LSM303_OUT_X_L_A);
@@ -85,19 +86,18 @@ read_accelerometer(int16_t accelerometer[3]) {
     // Combine high and low bytes
 
     // xAcceleration
-    accelerometer[0] = (int16_t) ((buffer[1] << 8) | buffer[0]);
+    accelerometer[0] = (int16_t)((buffer[1] << 8) | buffer[0]);
 
     // yAcceleration
-    accelerometer[1] = (int16_t) ((buffer[3] << 8) | buffer[2]);
+    accelerometer[1] = (int16_t)((buffer[3] << 8) | buffer[2]);
 
     // zAcceleration
-    accelerometer[2] = (int16_t) ((buffer[5] << 8) | buffer[4]);
+    accelerometer[2] = (int16_t)((buffer[5] << 8) | buffer[4]);
 
     // Apply the calibration data
     accelerometer[0] -= g_calibration_data.accelerometerBias[0];
     accelerometer[1] -= g_calibration_data.accelerometerBias[1];
     accelerometer[2] -= g_calibration_data.accelerometerBias[2];
-
 }
 
 /**
@@ -105,13 +105,14 @@ read_accelerometer(int16_t accelerometer[3]) {
  * @param magnetometer  Magnetometer Data
  */
 static inline void
-read_magnetometer(int16_t magnetometer[3]) {
+read_magnetometer(int16_t magnetometer[3])
+{
     uint8_t buffer[6];
     int32_t xMagFiltered = 0;
     int32_t yMagFiltered = 0;
     int32_t zMagFiltered = 0;
 
-    for (int i = 0; i < NUM_READINGS; i ++)
+    for (int i = 0; i < NUM_READINGS; i++)
     {
         buffer[0] = read_data(MAG_ADDR, LSM303_OUT_X_H_M);
         buffer[1] = read_data(MAG_ADDR, LSM303_OUT_X_L_M);
@@ -121,9 +122,9 @@ read_magnetometer(int16_t magnetometer[3]) {
         buffer[5] = read_data(MAG_ADDR, LSM303_OUT_Z_L_M);
 
         // Update the cumulative sum of the magnetometer data
-        xMagFiltered += (int16_t) (buffer[0] << 8 | buffer[1]);
-        yMagFiltered += (int16_t) (buffer[2] << 8 | buffer[3]);
-        zMagFiltered += (int16_t) (buffer[4] << 8 | buffer[5]);
+        xMagFiltered += (int16_t)(buffer[0] << 8 | buffer[1]);
+        yMagFiltered += (int16_t)(buffer[2] << 8 | buffer[3]);
+        zMagFiltered += (int16_t)(buffer[4] << 8 | buffer[5]);
     }
 
     // Calculate the moving average
@@ -142,7 +143,8 @@ read_magnetometer(int16_t magnetometer[3]) {
  * @param temperature  Temperature Data in Degrees Celsius
  */
 static inline void
-read_temperature(int16_t temperature[1]) {
+read_temperature(int16_t temperature[1])
+{
     uint8_t buffer[2];
 
     buffer[0] = read_data(MAG_ADDR, LSM303_TEMP_OUT_H_M);
@@ -155,35 +157,37 @@ read_temperature(int16_t temperature[1]) {
      * Source: https://electronics.stackexchange.com/a/356964
      */
 
-    int16_t raw_temperature =
-            (20 << 3) + (((int16_t) buffer[0] << 8 | buffer[1]) >> 4);
+    int16_t raw_temperature
+        = (20 << 3) + (((int16_t)buffer[0] << 8 | buffer[1]) >> 4);
 
     // Convert the raw temperature data to degrees Celsius
-    float temperature_celsius = (float) raw_temperature / 8.0;
+    float temperature_celsius = (float)raw_temperature / 8.0;
 
     // Store the result in the temperature array
-    temperature[0] = (int16_t) temperature_celsius;
+    temperature[0] = (int16_t)temperature_celsius;
 }
 
-static void initial_calibration() {
+void
+initial_calibration()
+{
     int16_t accelerometer[3];
     int16_t magnetometer[3];
 
-    int16_t accelerometerMin[3] = {0, 0, 0};
-    int16_t accelerometerMax[3] = {0, 0, 0};
-    int16_t magnetometerMin[3] = {0, 0, 0};
-    int16_t magnetometerMax[3] = {0, 0, 0};
+    int16_t accelerometerMin[3] = { 0, 0, 0 };
+    int16_t accelerometerMax[3] = { 0, 0, 0 };
+    int16_t magnetometerMin[3]  = { 0, 0, 0 };
+    int16_t magnetometerMax[3]  = { 0, 0, 0 };
 
     printf("Initial Calibration\n");
 
-    for (int i = 0; i < 100; i ++)
+    for (int i = 0; i < 100; i++)
     {
         printf("Calibrating... %d\n", i);
 
         read_accelerometer(accelerometer);
         read_magnetometer(magnetometer);
 
-        for (int j = 0; j < 3; j ++)
+        for (int j = 0; j < 3; j++)
         {
             if (accelerometer[j] > accelerometerMax[j])
             {
@@ -205,19 +209,19 @@ static void initial_calibration() {
         sleep_ms(10);
     }
 
-    g_calibration_data.accelerometerBias[0] =
-            (accelerometerMax[0] + accelerometerMin[0]) / 2;
-    g_calibration_data.accelerometerBias[1] =
-            (accelerometerMax[1] + accelerometerMin[1]) / 2;
-    g_calibration_data.accelerometerBias[2] =
-            (accelerometerMax[2] + accelerometerMin[2]) / 2;
+    g_calibration_data.accelerometerBias[0]
+        = (accelerometerMax[0] + accelerometerMin[0]) / 2;
+    g_calibration_data.accelerometerBias[1]
+        = (accelerometerMax[1] + accelerometerMin[1]) / 2;
+    g_calibration_data.accelerometerBias[2]
+        = (accelerometerMax[2] + accelerometerMin[2]) / 2;
 
-    g_calibration_data.magnetometerBias[0] =
-            (magnetometerMax[0] + magnetometerMin[0]) / 2;
-    g_calibration_data.magnetometerBias[1] =
-            (magnetometerMax[1] + magnetometerMin[1]) / 2;
-    g_calibration_data.magnetometerBias[2] =
-            (magnetometerMax[2] + magnetometerMin[2]) / 2;
+    g_calibration_data.magnetometerBias[0]
+        = (magnetometerMax[0] + magnetometerMin[0]) / 2;
+    g_calibration_data.magnetometerBias[1]
+        = (magnetometerMax[1] + magnetometerMin[1]) / 2;
+    g_calibration_data.magnetometerBias[2]
+        = (magnetometerMax[2] + magnetometerMin[2]) / 2;
 
     printf("Accelerometer Bias: %d, %d, %d\n",
            g_calibration_data.accelerometerBias[0],
@@ -242,14 +246,15 @@ static void initial_calibration() {
  * @return None
  */
 static void
-LSM303DLHC_init() {
+LSM303DLHC_init()
+{
     /**
      * Accelerometer Setup
      */
 
     // 0x20 = CTRL_REG1_A
     // Normal power mode, all axes enabled, 10 Hz
-    uint8_t buf[2] = {LSM303_CTRL_REG1_A, 0x27};
+    uint8_t buf[2] = { LSM303_CTRL_REG1_A, 0x27 };
     i2c_write_blocking(i2c_default, ACCEL_ADDR, buf, 2, false);
 
     // Reboot memory content (0x40 = CTRL_REG4_A)
@@ -285,8 +290,15 @@ LSM303DLHC_init() {
  * @details Initialise the I2C Port, SDA and SCL Pins, and the LSM303DLHC Sensor
  */
 void
-magnetometer_init()
+magnetometer_init(car_struct_t *p_car_struct)
 {
+    p_car_struct->p_direction->roll        = 0;
+    p_car_struct->p_direction->pitch       = 0;
+    p_car_struct->p_direction->yaw         = 0;
+    p_car_struct->p_direction->orientation = NORTH;
+    p_car_struct->p_direction->roll_angle  = LEFT;
+    p_car_struct->p_direction->pitch_angle = UP;
+
     i2c_init(I2C_PORT, 400 * 1000);
 
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
@@ -296,12 +308,9 @@ magnetometer_init()
 
     LSM303DLHC_init();
 
-//    initial_calibration();
+    //    initial_calibration();
 
-//    sleep_ms(3000);
     printf("Magnetometer Initialised\n");
-    // Semaphore
-    // g_direction_sem = xSemaphoreCreateBinary();
 }
 
 /**
@@ -310,11 +319,11 @@ magnetometer_init()
  * @return True (To keep the timer running)
  */
 bool
-h_direction_timer_handler(repeating_timer_t *repeatingTimer) {
+h_direction_timer_handler(repeating_timer_t *repeatingTimer)
+{
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(g_direction_sem,
-                          &xHigherPriorityTaskWoken);
+    xSemaphoreGiveFromISR(g_direction_sem, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return true;
 }
