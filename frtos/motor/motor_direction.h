@@ -75,23 +75,9 @@ check_direction(float current_direction, float target_direction, float range)
  * @param pp_car_struct The car struct pointer
  */
 void
-spin_to_yaw(float target_yaw, car_struct_t *pp_car_struct)
+spin_to_yaw(uint32_t direction, float target_yaw, car_struct_t *pp_car_struct)
 {
-    updateDirection();
-    float initial_yaw = g_direction.yaw;
-
-    // if it will to turn more than 180 degrees, turn the other way
-    if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw < 180.f)
-        || ((target_yaw < initial_yaw) && (initial_yaw - target_yaw >= 180.f)))
-    {
-        set_wheel_direction(DIRECTION_RIGHT);
-    }
-    else if ((target_yaw > initial_yaw) && (target_yaw - initial_yaw >= 180.f)
-             || ((target_yaw < initial_yaw)
-                 && (initial_yaw - target_yaw < 180.f)))
-    {
-        set_wheel_direction(DIRECTION_LEFT);
-    }
+    set_wheel_direction(direction);
 
     set_wheel_speed_synced(80u, pp_car_struct);
 
@@ -110,6 +96,24 @@ spin_to_yaw(float target_yaw, car_struct_t *pp_car_struct)
 
     pp_car_struct->p_pid->use_pid = true;
     vTaskDelay(pdMS_TO_TICKS(50));
+}
+
+void
+spin_right(float degree, car_struct_t *pp_car_struct)
+{
+    updateDirection();
+    float initial_yaw = g_direction.yaw;
+    float target_yaw  = adjust_yaw(initial_yaw + degree);
+    spin_to_yaw(DIRECTION_RIGHT, target_yaw, pp_car_struct);
+}
+
+void
+spin_left(float degree, car_struct_t *pp_car_struct)
+{
+    updateDirection();
+    float initial_yaw = g_direction.yaw;
+    float target_yaw  = adjust_yaw(initial_yaw - degree);
+    spin_to_yaw(DIRECTION_LEFT, target_yaw, pp_car_struct);
 }
 
 #endif /* MOTOR_DIRECTION_H */
