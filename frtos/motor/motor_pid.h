@@ -24,8 +24,6 @@ compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
     float error = car_struct->p_left_motor->speed.distance_cm
                   - car_struct->p_right_motor->speed.distance_cm;
 
-    printf("%f\n", error);
-
     *integral += error;
 
     float derivative = error - *prev_error;
@@ -55,8 +53,6 @@ repeating_pid_handler(struct repeating_timer *t)
 
     float control_signal = compute_pid(&integral, &prev_error, car_strut);
 
-    printf("control: %f\n", control_signal);
-
     float temp
         = (float)car_strut->p_right_motor->pwm.level + control_signal * 0.05f;
 
@@ -70,12 +66,7 @@ repeating_pid_handler(struct repeating_timer *t)
         temp = MIN_PWM_LEVEL + 1u;
     }
 
-    printf("temp: %f\n", temp);
-
     set_wheel_speed((uint32_t)temp, car_strut->p_right_motor);
-
-    printf("speed: %f cm/s\n", car_strut->p_right_motor->speed.current_cms);
-    printf("distance: %f cm\n", car_strut->p_right_motor->speed.distance_cm);
 
     return true;
 }
