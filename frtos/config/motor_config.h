@@ -13,11 +13,13 @@
 #define DIRECTION_PIN_LEFT_IN3 19U
 #define DIRECTION_PIN_LEFT_IN4 20U
 
+// to turn one side
 #define DIRECTION_RIGHT_FORWARD  (1U << DIRECTION_PIN_RIGHT_IN2)
 #define DIRECTION_RIGHT_BACKWARD (1U << DIRECTION_PIN_RIGHT_IN1)
 #define DIRECTION_LEFT_FORWARD   (1U << DIRECTION_PIN_LEFT_IN4)
 #define DIRECTION_LEFT_BACKWARD  (1U << DIRECTION_PIN_LEFT_IN3)
 
+// to spin
 #define DIRECTION_FORWARD  (DIRECTION_LEFT_FORWARD | DIRECTION_RIGHT_FORWARD)
 #define DIRECTION_BACKWARD (DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_BACKWARD)
 #define DIRECTION_LEFT     (DIRECTION_LEFT_BACKWARD | DIRECTION_RIGHT_FORWARD)
@@ -25,14 +27,23 @@
 
 #define DIRECTION_MASK (DIRECTION_FORWARD | DIRECTION_BACKWARD)
 
+// wheel encoder sensor pins
 #define SPEED_PIN_RIGHT 15U
 #define SPEED_PIN_LEFT  16U
 
+// PWM parameters
 #define PWM_CLK_DIV 50.f
 #define PWM_WRAP    100U
 
 #define MAX_PWM_LEVEL 99U
 #define MIN_PWM_LEVEL 0U
+
+// speed in cm/s; speed = distance / time
+// distance = circumference / 20
+// circumference = 2 * pi * 3.25 cm = 20.4203522483 cm
+// distance = 20.4203522483 cm / 20 = 1.02101761242 cm
+#define SLOT_DISTANCE_CM          1.02101761242f
+#define SLOT_DISTANCE_CM_MODIFIED (SLOT_DISTANCE_CM * 1000000.f)
 
 /*!
  * @brief Structure for the motor speed parameters
@@ -83,10 +94,10 @@ typedef struct
  */
 typedef struct
 {
-    motor_speed_t       speed;
-    motor_pwm_t         pwm;
-    SemaphoreHandle_t * p_sem;
-    bool              * use_pid;
+    motor_speed_t      speed;
+    motor_pwm_t        pwm;
+    SemaphoreHandle_t *p_sem;
+    bool              *use_pid;
 
 } motor_t;
 
@@ -101,7 +112,7 @@ SemaphoreHandle_t g_left_sem;
 SemaphoreHandle_t g_right_sem;
 
 // for testing
-//typedef struct
+// typedef struct
 //{
 //    motor_t     * p_left_motor;
 //    motor_t     * p_right_motor;
