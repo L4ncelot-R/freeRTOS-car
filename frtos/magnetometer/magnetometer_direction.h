@@ -310,54 +310,45 @@ updateDirection(volatile direction_t * g_direction)
     static int cur_x = 0;
     static int cur_y = 0;
 
-    read_magnetometer(magnetometer);
-    read_accelerometer(accelerometer);
+    read_magnetometer(magnetometer, g_direction);
+    read_accelerometer(accelerometer, g_direction);
     read_temperature(temperature);
 
     read_direction(accelerometer, magnetometer, g_direction);
 
-    print_orientation_data(*g_direction);
-
-    // Temperature in degrees Celsius
-    //    printf("Temperature: %d\n", temperature[0]);
-
-    //    print_orientation_data();
-
-    //    printf("Direction: ");
-
-    //    print_direction(g_direction.orientation);
-
-    switch (g_direction->orientation)
-    {
-        case NORTH:
-            cur_y++;
-            break;
-        case EAST:
-            cur_x++;
-            break;
-        case SOUTH:
-            cur_y--;
-            break;
-        case WEST:
-            cur_x--;
-            break;
-        case NORTH_EAST:
-            cur_x++;
-            cur_y++;
-            break;
-        case SOUTH_EAST:
-            cur_x++;
-            cur_y--;
-            break;
-        case SOUTH_WEST:
-            cur_x--;
-            cur_y--;
-            break;
-        case NORTH_WEST:
-            cur_x--;
-            cur_y++;
-            break;
-    }
+//    print_orientation_data(*g_direction);
+//
+//    switch (g_direction->orientation)
+//    {
+//        case NORTH:
+//            cur_y++;
+//            break;
+//        case EAST:
+//            cur_x++;
+//            break;
+//        case SOUTH:
+//            cur_y--;
+//            break;
+//        case WEST:
+//            cur_x--;
+//            break;
+//        case NORTH_EAST:
+//            cur_x++;
+//            cur_y++;
+//            break;
+//        case SOUTH_EAST:
+//            cur_x++;
+//            cur_y--;
+//            break;
+//        case SOUTH_WEST:
+//            cur_x--;
+//            cur_y--;
+//            break;
+//        case NORTH_WEST:
+//            cur_x--;
+//            cur_y++;
+//            break;
+//    }
 
     // Update the map based on the direction of the car (N, E, S, W)
     //    update_map(g_direction.orientation, cur_x, cur_y);

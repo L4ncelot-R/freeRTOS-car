@@ -29,24 +29,6 @@
 // Semaphores
 SemaphoreHandle_t g_direction_sem = NULL;
 
-// direction_t g_direction = {
-//         .roll = 0,
-//         .pitch = 0,
-//         .yaw = 0,
-//         .orientation = NORTH,
-//         .roll_angle = LEFT,
-//         .pitch_angle = UP
-// };
-
-struct s_calibration_data
-{
-    int16_t accelerometerBias[3];
-    int16_t magnetometerBias[3];
-};
-
-struct s_calibration_data g_calibration_data
-    = { .accelerometerBias = { 0, 0, 0 }, .magnetometerBias = { 0, 0, 0 } };
-
 /**
  * @brief Read Data with I2C, given the address and register
  * @param addr  Address of the device
@@ -72,7 +54,7 @@ read_data(uint8_t addr, uint8_t reg)
  * @param accelerometer   Accelerometer Data
  */
 static inline void
-read_accelerometer(int16_t accelerometer[3])
+read_accelerometer(int16_t accelerometer[3], volatile direction_t *p_direction)
 {
     uint8_t buffer[6];
 
@@ -95,9 +77,9 @@ read_accelerometer(int16_t accelerometer[3])
     accelerometer[2] = (int16_t)((buffer[5] << 8) | buffer[4]);
 
     // Apply the calibration data
-    accelerometer[0] -= g_calibration_data.accelerometerBias[0];
-    accelerometer[1] -= g_calibration_data.accelerometerBias[1];
-    accelerometer[2] -= g_calibration_data.accelerometerBias[2];
+    accelerometer[0] -= p_direction->calibration_data->accelerometerBias[0];
+    accelerometer[1] -= p_direction->calibration_data->accelerometerBias[1];
+    accelerometer[2] -= p_direction->calibration_data->accelerometerBias[2];
 }
 
 /**
@@ -105,7 +87,7 @@ read_accelerometer(int16_t accelerometer[3])
  * @param magnetometer  Magnetometer Data
  */
 static inline void
-read_magnetometer(int16_t magnetometer[3])
+read_magnetometer(int16_t magnetometer[3], volatile direction_t *p_direction)
 {
     uint8_t buffer[6];
     int32_t xMagFiltered = 0;
@@ -133,9 +115,9 @@ read_magnetometer(int16_t magnetometer[3])
     magnetometer[2] = zMagFiltered / NUM_READINGS;
 
     // Apply the calibration data
-    magnetometer[0] -= g_calibration_data.magnetometerBias[0];
-    magnetometer[1] -= g_calibration_data.magnetometerBias[1];
-    magnetometer[2] -= g_calibration_data.magnetometerBias[2];
+    magnetometer[0] -= p_direction->calibration_data->magnetometerBias[0];
+    magnetometer[1] -= p_direction->calibration_data->magnetometerBias[1];
+    magnetometer[2] -= p_direction->calibration_data->magnetometerBias[2];
 }
 
 /**
@@ -167,8 +149,13 @@ read_temperature(int16_t temperature[1])
     temperature[0] = (int16_t)temperature_celsius;
 }
 
+/**
+ * @brief Calibrate the Magnetometer Sensor via bias values
+ *
+ * @return None
+ */
 void
-initial_calibration()
+initial_calibration(direction_t *p_direction)
 {
     int16_t accelerometer[3];
     int16_t magnetometer[3];
@@ -184,8 +171,8 @@ initial_calibration()
     {
         printf("Calibrating... %d\n", i);
 
-        read_accelerometer(accelerometer);
-        read_magnetometer(magnetometer);
+        read_accelerometer(accelerometer, p_direction);
+        read_magnetometer(magnetometer, p_direction);
 
         for (int j = 0; j < 3; j++)
         {
@@ -209,29 +196,29 @@ initial_calibration()
         sleep_ms(10);
     }
 
-    g_calibration_data.accelerometerBias[0]
+    p_direction->calibration_data->accelerometerBias[0]
         = (accelerometerMax[0] + accelerometerMin[0]) / 2;
-    g_calibration_data.accelerometerBias[1]
+    p_direction->calibration_data->accelerometerBias[1]
         = (accelerometerMax[1] + accelerometerMin[1]) / 2;
-    g_calibration_data.accelerometerBias[2]
+    p_direction->calibration_data->accelerometerBias[2]
         = (accelerometerMax[2] + accelerometerMin[2]) / 2;
 
-    g_calibration_data.magnetometerBias[0]
+    p_direction->calibration_data->magnetometerBias[0]
         = (magnetometerMax[0] + magnetometerMin[0]) / 2;
-    g_calibration_data.magnetometerBias[1]
+    p_direction->calibration_data->magnetometerBias[1]
         = (magnetometerMax[1] + magnetometerMin[1]) / 2;
-    g_calibration_data.magnetometerBias[2]
+    p_direction->calibration_data->magnetometerBias[2]
         = (magnetometerMax[2] + magnetometerMin[2]) / 2;
 
     printf("Accelerometer Bias: %d, %d, %d\n",
-           g_calibration_data.accelerometerBias[0],
-           g_calibration_data.accelerometerBias[1],
-           g_calibration_data.accelerometerBias[2]);
+           p_direction->calibration_data->accelerometerBias[0],
+           p_direction->calibration_data->accelerometerBias[1],
+           p_direction->calibration_data->accelerometerBias[2]);
 
     printf("Magnetometer Bias: %d, %d, %d\n",
-           g_calibration_data.magnetometerBias[0],
-           g_calibration_data.magnetometerBias[1],
-           g_calibration_data.magnetometerBias[2]);
+           p_direction->calibration_data->magnetometerBias[0],
+           p_direction->calibration_data->magnetometerBias[1],
+           p_direction->calibration_data->magnetometerBias[2]);
 }
 
 /**
@@ -298,6 +285,9 @@ magnetometer_init(car_struct_t *p_car_struct)
     p_car_struct->p_direction->orientation = NORTH;
     p_car_struct->p_direction->roll_angle  = LEFT;
     p_car_struct->p_direction->pitch_angle = UP;
+    calibration_data_t g_calibration_data
+        = { .accelerometerBias = { 0, 0, 0 }, .magnetometerBias = { 0, 0, 0 } };
+    p_car_struct->p_direction->calibration_data = &g_calibration_data;
 
     printf("Magnetometer Initialising\n");
     i2c_init(I2C_PORT, 400 * 1000);

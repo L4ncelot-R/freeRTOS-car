@@ -7,10 +7,11 @@
 
 #define DIRECTION_READ_DELAY (200)
 
-#define NUM_READINGS                            ( 10 ) // Number of readings to
-                                                        // take before
-                                                        // calculating
-                                                        // direction
+#define NUM_READINGS \
+    (10) // Number of readings to
+         // take before
+         // calculating
+         // direction
 
 // #define ALPHA                                   ( 0.1f ) // Low Pass Filter
 //  Coefficient
@@ -56,6 +57,12 @@ typedef enum
     RIGHT = 3
 } angle_t;
 
+typedef struct s_calibration_data
+{
+    int16_t accelerometerBias[3];
+    int16_t magnetometerBias[3];
+} calibration_data_t;
+
 /**
  * @brief The direction of the car
  * roll = angle of the car (left or right)
@@ -71,6 +78,7 @@ typedef struct
     compass_direction_t orientation;
     angle_t             roll_angle;
     angle_t             pitch_angle;
+    calibration_data_t  *calibration_data;
 } direction_t;
 
 #endif
