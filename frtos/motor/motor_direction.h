@@ -70,7 +70,7 @@ check_direction(float current_direction, float target_direction, float range)
 }
 
 /*!
- * @brief Spin the car to a certain yaw specifically
+ * @brief Spin the car to a certain yaw specifically, update the map after
  * @param direction The direction to turn or spin
  * @param target_yaw The target yaw to spin to
  * @param pwm_level The pwm_level of the wheels, from 0 to 99
@@ -83,6 +83,8 @@ turn_to_yaw(uint32_t      direction,
             car_struct_t *pp_car_struct)
 {
     pp_car_struct->p_pid->use_pid = false;
+
+    float current_distance = pp_car_struct->p_right_motor->speed.distance_cm;
 
     set_wheel_direction(direction);
 
@@ -98,6 +100,13 @@ turn_to_yaw(uint32_t      direction,
             break;
         }
     }
+
+    float distance_traveled
+        = pp_car_struct->p_right_motor->speed.distance_cm - current_distance;
+
+    // Update Map after turning
+    update_map(pp_car_struct->p_grid, direction, distance_traveled);
+
 
     pp_car_struct->p_pid->use_pid = true;
     vTaskDelay(pdMS_TO_TICKS(50));

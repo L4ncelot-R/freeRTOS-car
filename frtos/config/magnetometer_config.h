@@ -7,13 +7,11 @@
 
 #define DIRECTION_READ_DELAY (200)
 
-#define NUM_READINGS                            ( 10 ) // Number of readings to
-                                                        // take before
-                                                        // calculating
-                                                        // direction
-
-// #define ALPHA                                   ( 0.1f ) // Low Pass Filter
-//  Coefficient
+#define NUM_READINGS \
+    (10) // Number of readings to
+         // take before
+         // calculating
+         // direction
 
 // LSM303DLHC temperature compensation coefficients
 #define SCALE_Z  (1.0f) // Scale for Z-axis
@@ -50,10 +48,12 @@ typedef enum
  */
 typedef enum
 {
-    UP    = 0,
-    DOWN  = 1,
-    LEFT  = 2,
-    RIGHT = 3
+    FORWARD  = 0,
+    UP       = 0,
+    BACKWARD = 1,
+    DOWN     = 1,
+    LEFT     = 2,
+    RIGHT    = 3
 } angle_t;
 
 /**
