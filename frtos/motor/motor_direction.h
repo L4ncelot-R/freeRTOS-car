@@ -70,18 +70,23 @@ check_direction(float current_direction, float target_direction, float range)
 }
 
 /*!
- * @brief Spin the car to a certain yaw
+ * @brief Spin the car to a certain yaw specifically
+ * @param direction The direction to turn or spin
  * @param target_yaw The target yaw to spin to
+ * @param pwm_level The pwm_level of the wheels, from 0 to 99
  * @param pp_car_struct The car struct pointer
  */
 void
-spin_to_yaw(uint32_t direction, float target_yaw, car_struct_t *pp_car_struct)
+turn_to_yaw(uint32_t      direction,
+            float         target_yaw,
+            uint32_t      pwm_level,
+            car_struct_t *pp_car_struct)
 {
     pp_car_struct->p_pid->use_pid = false;
 
     set_wheel_direction(direction);
 
-    set_wheel_speed_synced(80u, pp_car_struct);
+    set_wheel_speed_synced(pwm_level, pp_car_struct);
 
     for (;;)
     {
@@ -98,8 +103,18 @@ spin_to_yaw(uint32_t direction, float target_yaw, car_struct_t *pp_car_struct)
     vTaskDelay(pdMS_TO_TICKS(50));
 }
 
+/*!
+ * @brief turn or spin the car to a certain degree offset from the current yaw
+ * @param direction The direction to turn or spin
+ * @param target_yaw The target yaw to spin to
+ * @param pwm_level The pwm_level of the wheels, from 0 to 99
+ * @param pp_car_struct The car struct pointer
+ */
 void
-spin_right(float degree, car_struct_t *pp_car_struct)
+turn(uint32_t      direction,
+     float         degree,
+     uint32_t      pwm_level,
+     car_struct_t *pp_car_struct)
 {
     set_wheel_direction(DIRECTION_MASK);
     vTaskDelay(pdMS_TO_TICKS(50));
@@ -108,20 +123,7 @@ spin_right(float degree, car_struct_t *pp_car_struct)
     float initial_yaw = pp_car_struct->p_direction->yaw;
     float target_yaw  = adjust_yaw(initial_yaw + degree);
 
-    spin_to_yaw(DIRECTION_RIGHT, target_yaw, pp_car_struct);
-}
-
-void
-spin_left(float degree, car_struct_t *pp_car_struct)
-{
-    set_wheel_direction(DIRECTION_MASK);
-    vTaskDelay(pdMS_TO_TICKS(50));
-
-    updateDirection(pp_car_struct->p_direction);
-    float initial_yaw = pp_car_struct->p_direction->yaw;
-    float target_yaw  = adjust_yaw(initial_yaw - degree);
-
-    spin_to_yaw(DIRECTION_LEFT, target_yaw, pp_car_struct);
+    turn_to_yaw(direction, target_yaw, pwm_level, pp_car_struct);
 }
 
 #endif /* MOTOR_DIRECTION_H */

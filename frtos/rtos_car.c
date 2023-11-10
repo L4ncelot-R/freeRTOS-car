@@ -20,15 +20,15 @@ motor_control_task(void *params)
         printf("Collision: %d\n", check_collision(car_struct));
         if (check_collision(car_struct))
         {
-            spin_left(90, car_struct);
+            turn(DIRECTION_LEFT, 90, 80u, car_struct);
 
 //            if (check_collision(car_struct))
 //            {
-//                spin_right(180, car_struct);
+//                turn(180, car_struct);
 //
 //                if (check_collision(car_struct))
 //                {
-//                    spin_right(90, car_struct);
+//                    turn(90, car_struct);
 //                }
 //            }
         }
