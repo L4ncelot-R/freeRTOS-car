@@ -41,6 +41,30 @@ motor_control_task(void *params)
     }
 }
 
+void
+h_main_irq_handler(void)
+{
+    if (gpio_get_irq_event_mask(SPEED_PIN_LEFT) & GPIO_IRQ_EDGE_FALL)
+    {
+        gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
+
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(g_left_sem,
+                              &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+
+    if (gpio_get_irq_event_mask(SPEED_PIN_RIGHT) & GPIO_IRQ_EDGE_FALL)
+    {
+        gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
+
+        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+        xSemaphoreGiveFromISR(g_right_sem,
+                              &xHigherPriorityTaskWoken);
+        portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    }
+}
+
 int
 main(void)
 {
@@ -72,7 +96,7 @@ main(void)
 
     //motor
     motor_init(&car_struct);
-    motor_tasks_init(&car_struct, &h_wheel_sensor_isr_handler);
+    motor_tasks_init(&car_struct, &h_main_irq_handler);
     printf("Motor initialized!\n");
 
     // Magnetometer
