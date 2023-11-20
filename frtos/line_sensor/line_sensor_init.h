@@ -31,7 +31,7 @@ SemaphoreHandle_t g_left_sensor_sem = NULL;
 static inline void
 line_sensor_init(car_struct_t *p_car_struct)
 {
-    p_car_struct->obs->line_detected = false;
+    p_car_struct->obs->left_sensor_detected, p_car_struct->obs->left_sensor_detected = false;
 
     g_left_sensor_sem = xSemaphoreCreateBinary();
 
