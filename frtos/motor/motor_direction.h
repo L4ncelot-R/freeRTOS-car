@@ -27,13 +27,6 @@ set_wheel_direction(uint32_t direction)
     gpio_set_mask(direction);
 }
 
-void
-update_target_yaw(volatile direction_t * g_direction)
-{
-//    updateDirection(g_direction);
-    g_direction->target_yaw = g_direction->yaw;
-}
-
 /*!
  * @brief Set the direction of the wheel to opposite direction using bit mask
  */
