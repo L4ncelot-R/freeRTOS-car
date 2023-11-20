@@ -30,7 +30,7 @@ set_wheel_direction(uint32_t direction)
 void
 update_target_yaw(volatile direction_t * g_direction)
 {
-    updateDirection(g_direction);
+//    updateDirection(g_direction);
     g_direction->target_yaw = g_direction->yaw;
 }
 

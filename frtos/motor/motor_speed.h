@@ -105,27 +105,28 @@ set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *pp_car_strut)
     set_wheel_speed(pwm_level, pp_car_strut->p_right_motor);
 }
 
-///*!
-// * @brief Set the distance to travel before stopping, must be called after
-// * setting the speed and direction.
-// * @param distance_cm distance to travel in cm
-// */
-//void
-//distance_to_stop(float distance_cm)
-//{
-//    float initial = g_motor_right.speed.distance_cm;
-//
-//    for (;;)
-//    {
-//        if (g_motor_right.speed.distance_cm - initial >= distance_cm)
-//        {
-//            set_wheel_speed_synced(0u);
-//            break;
-//        }
-//        vTaskDelay(pdMS_TO_TICKS(10));
-//    }
-//    vTaskDelay(pdMS_TO_TICKS(1000));
-//    g_motor_right.speed.distance_cm = g_motor_left.speed.distance_cm;
-//}
+/*!
+ * @brief Set the distance to travel before stopping, must be called after
+ * setting the speed and direction.
+ * @param distance_cm distance to travel in cm
+ */
+void
+distance_to_stop(car_struct_t * pp_car_struct, float distance_cm)
+{
+    float initial = pp_car_struct->p_left_motor->speed.distance_cm;
+
+    for (;;)
+    {
+        if (pp_car_struct->p_left_motor->speed.distance_cm - initial >= distance_cm)
+        {
+            set_wheel_speed_synced(0u);
+            break;
+        }
+        vTaskDelay(pdMS_TO_TICKS(10));
+    }
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    pp_car_struct->p_right_motor->speed.distance_cm =
+        pp_car_struct->p_left_motor->speed.distance_cm;
+}
 
 #endif /* MOTOR_SPEED_H */
