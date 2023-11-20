@@ -8,7 +8,8 @@ bool
 check_collision(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
-    return ((car_struct->obs->left_sensor_detected << 1) | (car_struct->obs->right_sensor_detected))
+    return ((car_struct->obs->left_sensor_detected << 1)
+            | (car_struct->obs->right_sensor_detected))
            || car_struct->obs->ultrasonic_detected;
 }
 
@@ -17,39 +18,39 @@ check_line_touch(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
 
-    return (car_struct->obs->left_sensor_detected << 1) | (car_struct->obs->right_sensor_detected);
+    return (car_struct->obs->left_sensor_detected << 1)
+           | (car_struct->obs->right_sensor_detected);
 }
+
 void
 motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
-    update_target_yaw(car_struct->p_direction);
+
     set_wheel_direction(DIRECTION_FORWARD);
     set_wheel_speed_synced(90u, car_struct);
+    distance_to_stop(car_struct, 17);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    turn(DIRECTION_LEFT, 90, 90u, car_struct);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    set_wheel_direction(DIRECTION_FORWARD);
+    set_wheel_speed_synced(90u, car_struct);
+    distance_to_stop(car_struct, 17);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    turn(DIRECTION_RIGHT, 90, 90u, car_struct);
+
+    set_wheel_direction(DIRECTION_FORWARD);
+    set_wheel_speed_synced(90u, car_struct);
+    distance_to_stop(car_struct, 17);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    set_wheel_direction(DIRECTION_MASK);
+    set_wheel_speed_synced(0u, car_struct);
     for (;;)
-    {
-        //        printf("Collision: %d\n", check_collision(car_struct));
-        //        if (check_collision(car_struct))
-        //        {
-        //            turn(DIRECTION_LEFT, 90, 80u, car_struct);
-        //
-        ////            if (check_collision(car_struct))
-        ////            {
-        ////                turn(180, car_struct);
-        ////
-        ////                if (check_collision(car_struct))
-        ////                {
-        ////                    turn(90, car_struct);
-        ////                }
-        ////            }
-        //        }
-        //        else
-        //        {
-        //            set_wheel_direction(DIRECTION_FORWARD);
-        //            set_wheel_speed_synced(90u, car_struct);
-        //        }
-        vTaskDelay(pdMS_TO_TICKS(5));
-    }
+        ;
 }
 
 void
@@ -110,7 +111,7 @@ main(void)
 
     // Magnetometer
     magnetometer_init(&car_struct);
-    //    magnetometer_tasks_init(&car_struct);
+    magnetometer_tasks_init(&car_struct);
     updateDirection(car_struct.p_direction);
     printf("Magnetometer initialized!\n");
 
