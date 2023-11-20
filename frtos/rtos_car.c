@@ -150,6 +150,15 @@ main(void)
                 PRIO,
                 &h_motor_turning_task_handle);
 
+//    // obs task
+//    TaskHandle_t h_obs_task_handle = NULL;
+//    xTaskCreate(obs_task,
+//                "obs_task",
+//                configMINIMAL_STACK_SIZE,
+//                (void *)&car_struct,
+//                PRIO,
+//                &h_obs_task_handle);
+
     // PID timer
     struct repeating_timer pid_timer;
     add_repeating_timer_ms(-50, repeating_pid_handler, &car_struct, &pid_timer);
