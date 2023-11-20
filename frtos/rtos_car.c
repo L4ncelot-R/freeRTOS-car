@@ -23,6 +23,9 @@ void
 motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
+    update_target_yaw(car_struct);
+    set_wheel_direction(DIRECTION_FORWARD);
+    set_wheel_speed_synced(90u, car_struct);
     for (;;)
     {
         //        printf("Collision: %d\n", check_collision(car_struct));
@@ -45,8 +48,6 @@ motor_control_task(void *params)
         //            set_wheel_direction(DIRECTION_FORWARD);
         //            set_wheel_speed_synced(90u, car_struct);
         //        }
-        set_wheel_direction(DIRECTION_FORWARD);
-        set_wheel_speed_synced(90u, car_struct);
         vTaskDelay(pdMS_TO_TICKS(5));
     }
 }
@@ -110,7 +111,10 @@ main(void)
     // Magnetometer
     magnetometer_init(&car_struct);
     //    magnetometer_tasks_init(&car_struct);
+    updateDirection(car_struct.p_direction);
     printf("Magnetometer initialized!\n");
+
+    sleep_ms(1000u);
 
     // control task
     TaskHandle_t h_motor_turning_task_handle = NULL;
