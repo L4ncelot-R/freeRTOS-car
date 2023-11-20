@@ -21,6 +21,7 @@ compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
     float error = car_struct->p_left_motor->speed.distance_cm
                   - car_struct->p_right_motor->speed.distance_cm;
 
+    printf("error: %f\n", error);
     *integral += error;
 
     float derivative = error - *prev_error;

@@ -32,28 +32,34 @@ motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
 
-    set_wheel_direction(DIRECTION_FORWARD);
-    set_wheel_speed_synced(90u, car_struct);
-
     for (;;)
     {
         uint8_t temp = check_line_touch(car_struct);
         switch (temp)
         {
             default:
-                continue;
+                set_wheel_direction(DIRECTION_FORWARD);
+                set_wheel_speed_synced(90u, car_struct);
+                distance_to_stop(car_struct, 50.f);
+                vTaskDelay(pdMS_TO_TICKS(3000));
+                break;
             case 0b01:
                 car_struct->p_right_motor->speed.current_cms
-                    += SLOT_DISTANCE_CM;
+                    += SLOT_DISTANCE_CM*1000.f;
+                    break;
             case 0b10:
                 car_struct->p_right_motor->speed.current_cms
-                    -= SLOT_DISTANCE_CM;
+                    -= SLOT_DISTANCE_CM*1000.f;
+                    break;
             case 0b11:
-                vTaskDelay(pdMS_TO_TICKS(1000));
-                turn(DIRECTION_LEFT, 90u, 90u, car_struct);
+                // set_wheel_direction(DIRECTION_MASK);
+                // set_wheel_speed_synced(0u, car_struct);
+                // vTaskDelay(pdMS_TO_TICKS(1000));
+                // turn(DIRECTION_LEFT, 90u, 90u, car_struct);
+                break;
         }
 
-        vTaskDelay(pdMS_TO_TICKS(50));
+        vTaskDelay(pdMS_TO_TICKS(25));
     }
 }
 
@@ -69,9 +75,11 @@ obs_task(void *params)
     {
         if (car_struct->obs->ultrasonic_detected)
         {
-            turn(DIRECTION_LEFT, 180u, 90u, car_struct);
-            set_wheel_direction(DIRECTION_FORWARD);
-            set_wheel_speed_synced(90u, car_struct);
+            // turn(DIRECTION_LEFT, 180u, 90u, car_struct);
+            // set_wheel_direction(DIRECTION_FORWARD);
+            // set_wheel_speed_synced(90u, car_struct);
+            revert_wheel_direction();
+            distance_to_stop(car_struct, 25.f);
         }
         vTaskDelay(pdMS_TO_TICKS(50));
     }
@@ -142,22 +150,22 @@ main(void)
     sleep_ms(1000u);
 
     // control task
-    TaskHandle_t h_motor_turning_task_handle = NULL;
-    xTaskCreate(motor_control_task,
-                "motor_turning_task",
-                configMINIMAL_STACK_SIZE,
-                (void *)&car_struct,
-                PRIO,
-                &h_motor_turning_task_handle);
+    // TaskHandle_t h_motor_turning_task_handle = NULL;
+    // xTaskCreate(motor_control_task,
+    //             "motor_turning_task",
+    //             configMINIMAL_STACK_SIZE,
+    //             (void *)&car_struct,
+    //             PRIO,
+    //             &h_motor_turning_task_handle);
 
-//    // obs task
-//    TaskHandle_t h_obs_task_handle = NULL;
-//    xTaskCreate(obs_task,
-//                "obs_task",
-//                configMINIMAL_STACK_SIZE,
-//                (void *)&car_struct,
-//                PRIO,
-//                &h_obs_task_handle);
+   // obs task
+   TaskHandle_t h_obs_task_handle = NULL;
+   xTaskCreate(obs_task,
+               "obs_task",
+               configMINIMAL_STACK_SIZE,
+               (void *)&car_struct,
+               PRIO,
+               &h_obs_task_handle);
 
     // PID timer
     struct repeating_timer pid_timer;
