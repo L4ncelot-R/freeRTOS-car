@@ -39,7 +39,7 @@ motor_init(car_struct_t *car_struct)
 
     car_struct->p_pid->use_pid  = true;
     car_struct->p_pid->kp_value = 60.f;
-    car_struct->p_pid->ki_value = 6.67f;
+    car_struct->p_pid->ki_value = 0.f;
     car_struct->p_pid->kd_value = 135.f;
 
     // initialize the car_struct
