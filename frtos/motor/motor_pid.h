@@ -17,7 +17,7 @@ float calculate_yaw_difference(float current_yaw, float set_yaw) {
     set_yaw = fmod(set_yaw, 360.0);
 
     // Calculate the direct difference
-    float diff = set_yaw - current_yaw;
+    float diff = current_yaw - set_yaw;
 
     // Adjust the difference to consider the circular nature of yaw values
     if (diff > 180.0) {
@@ -40,12 +40,30 @@ float calculate_yaw_difference(float current_yaw, float set_yaw) {
 float
 compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
 {
+    float error = car_struct->p_left_motor->speed.distance_cm
+                  - car_struct->p_right_motor->speed.distance_cm;
+
+    *integral += error;
+
+    float derivative = error - *prev_error;
+
+    float control_signal
+        = car_struct->p_pid->kp_value * error
+          + car_struct->p_pid->ki_value * (*integral)
+          + car_struct->p_pid->kd_value * derivative;
+
+    *prev_error = error;
+
+    return control_signal;
+}
+
+float
+compute_pid_yaw(float *integral, float *prev_error, car_struct_t *car_struct)
+{
     updateDirection(car_struct->p_direction);
 
     float error = calculate_yaw_difference(car_struct->p_direction->yaw,
                                            car_struct->p_direction->target_yaw);
-//    float error = car_struct->p_left_motor->speed.distance_cm
-//                  - car_struct->p_right_motor->speed.distance_cm;
 
     *integral += error;
 
@@ -79,7 +97,7 @@ repeating_pid_handler(struct repeating_timer *ppp_timer)
         return true;
     }
 
-    float control_signal = compute_pid(&integral, &prev_error, car_strut);
+    float control_signal = compute_pid_yaw(&integral, &prev_error, car_strut);
 
     float temp
         = (float)car_strut->p_right_motor->pwm.level + control_signal * 0.05f;

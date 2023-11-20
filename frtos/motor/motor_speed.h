@@ -66,8 +66,6 @@ monitor_wheel_speed_task(void *ppp_motor)
                 = (float) (SLOT_DISTANCE_CM_MODIFIED / elapsed_time);
 
             p_motor->speed.distance_cm += SLOT_DISTANCE_CM;
-
-            printf("speed\n");
         }
         else
         {
