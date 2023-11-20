@@ -41,6 +41,7 @@ motor_control_task(void *params)
     vTaskDelay(pdMS_TO_TICKS(1000));
 
     turn(DIRECTION_RIGHT, 90, 90u, car_struct);
+    vTaskDelay(pdMS_TO_TICKS(1000));
 
     set_wheel_direction(DIRECTION_FORWARD);
     set_wheel_speed_synced(90u, car_struct);
