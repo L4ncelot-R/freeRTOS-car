@@ -119,7 +119,7 @@ distance_to_stop(car_struct_t * pp_car_struct, float distance_cm)
     {
         if (pp_car_struct->p_left_motor->speed.distance_cm - initial >= distance_cm)
         {
-            set_wheel_speed_synced(0u);
+            set_wheel_speed_synced(0u, pp_car_struct);
             break;
         }
         vTaskDelay(pdMS_TO_TICKS(10));
