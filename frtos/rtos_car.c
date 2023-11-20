@@ -23,7 +23,7 @@ void
 motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
-    update_target_yaw(car_struct);
+    update_target_yaw(car_struct->p_direction);
     set_wheel_direction(DIRECTION_FORWARD);
     set_wheel_speed_synced(90u, car_struct);
     for (;;)

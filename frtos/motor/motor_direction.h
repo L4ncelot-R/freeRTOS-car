@@ -28,10 +28,10 @@ set_wheel_direction(uint32_t direction)
 }
 
 void
-update_target_yaw(car_struct_t * pp_car_struct)
+update_target_yaw(volatile direction_t * g_direction)
 {
-    updateDirection(pp_car_struct->p_direction);
-    pp_car_struct->p_direction->target_yaw = pp_car_struct->p_direction->yaw;
+    updateDirection(g_direction);
+    g_direction->target_yaw = g_direction->yaw;
 }
 
 /*!
