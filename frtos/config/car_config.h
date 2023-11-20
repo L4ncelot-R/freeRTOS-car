@@ -10,7 +10,8 @@
 
 typedef struct s_obs_struct
 {
-    bool line_detected;
+    bool left_sensor_detected;
+    bool right_sensor_detected;
     bool ultrasonic_detected;
 
 } obs_t;

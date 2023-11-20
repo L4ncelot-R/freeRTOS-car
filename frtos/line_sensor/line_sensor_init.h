@@ -59,7 +59,7 @@ bool h_left_sensor_timer_handler(repeating_timer_t *repeatingTimer) {
 
 
 void
-monitor_left_sensor_task(void *pvParameters) {
+monitor_line_sensor_task(void *pvParameters) {
     volatile obs_t *p_obs = NULL;
     p_obs = (obs_t *) pvParameters;
 
@@ -68,8 +68,10 @@ monitor_left_sensor_task(void *pvParameters) {
 //        if (xSemaphoreTake(g_left_sensor_sem, portMAX_DELAY) == pdTRUE)
 //        {
             // Set the flag to notify the task
-            p_obs->line_detected = gpio_get(LEFT_SENSOR_PIN);
-            printf("Left Sensor: %d\n", p_obs->line_detected);
+            p_obs->left_sensor_detected = gpio_get(LEFT_SENSOR_PIN);
+            p_obs->right_sensor_detected = gpio_get(RIGHT_SENSOR_PIN);
+
+	    // printf("Left Sensor: %d\n", p_obs->line_detected);
             vTaskDelay(pdMS_TO_TICKS(LINE_SENSOR_READ_DELAY));
 //        }
     }
@@ -78,13 +80,13 @@ monitor_left_sensor_task(void *pvParameters) {
 void
 line_tasks_init(car_struct_t *car_struct)
 {
-    TaskHandle_t h_monitor_left_sensor_task = NULL;
-    xTaskCreate(monitor_left_sensor_task,
-                "read_left_sensor_task",
+    TaskHandle_t h_monitor_line_sensor_task = NULL;
+    xTaskCreate(monitor_line_sensor_task,
+                "read_line_sensor_task",
                 configMINIMAL_STACK_SIZE,
                 (void *)car_struct->obs,
                 PRIO,
-                &h_monitor_left_sensor_task);
+                &h_monitor_line_sensor_task);
 }
 
 

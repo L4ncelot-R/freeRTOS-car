@@ -8,9 +8,16 @@ bool
 check_collision(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
-    return car_struct->obs->line_detected
+    return ((car_struct->obs->left_line_detected << 1) | (car_struct->obs->right_line_detected))
            || car_struct->obs->ultrasonic_detected;
 }
+
+bool
+check_line_touch(void *params)
+{
+    car_struct_t *car_struct = (car_struct_t *)params;
+
+    return (car_struct->obs->left_line_detected << 1) | (car_struct->obs->right_line_detected);
 
 void
 motor_control_task(void *params)
