@@ -38,9 +38,9 @@ motor_init(car_struct_t *car_struct)
     g_right_sem = xSemaphoreCreateBinary();
 
     car_struct->p_pid->use_pid  = true;
-    car_struct->p_pid->kp_value = 600.f;
-    car_struct->p_pid->ki_value = 66.67f;
-    car_struct->p_pid->kd_value = 1350.f;
+    car_struct->p_pid->kp_value = 60.f;
+    car_struct->p_pid->ki_value = 6.67f;
+    car_struct->p_pid->kd_value = 135.f;
 
     // initialize the car_struct
     car_struct->p_left_motor->pwm.level         = 0u;
