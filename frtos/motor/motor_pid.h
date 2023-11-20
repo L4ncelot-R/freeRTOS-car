@@ -8,6 +8,28 @@
 #ifndef MOTOR_PID_H
 #define MOTOR_PID_H
 
+#include "magnetometer_init.h"
+#include "magnetometer_direction.h"
+
+float calculate_yaw_difference(float current_yaw, float set_yaw) {
+    // Normalize yaws to the range [0.0, 359.0]
+    current_yaw = fmod(current_yaw, 360.0);
+    set_yaw = fmod(set_yaw, 360.0);
+
+    // Calculate the direct difference
+    float diff = set_yaw - current_yaw;
+
+    // Adjust the difference to consider the circular nature of yaw values
+    if (diff > 180.0) {
+        diff -= 360.0;
+    } else if (diff < -180.0) {
+        diff += 360.0;
+    }
+
+    return diff;
+}
+
+
 /*!
  * @brief Compute the control signal using PID controller
  * @param integral The integral term of the PID controller
@@ -18,8 +40,12 @@
 float
 compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
 {
-    float error = car_struct->p_left_motor->speed.distance_cm
-                  - car_struct->p_right_motor->speed.distance_cm;
+    updateDirection(car_struct->p_direction);
+
+    float error = calculate_yaw_difference(car_struct->p_direction->yaw,
+                                           car_struct->p_direction->target_yaw);
+//    float error = car_struct->p_left_motor->speed.distance_cm
+//                  - car_struct->p_right_motor->speed.distance_cm;
 
     *integral += error;
 

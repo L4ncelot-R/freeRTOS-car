@@ -75,6 +75,7 @@ typedef struct
     float               roll;
     float               pitch;
     float               yaw;
+    float               target_yaw;
     compass_direction_t orientation;
     angle_t             roll_angle;
     angle_t             pitch_angle;

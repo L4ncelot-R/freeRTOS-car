@@ -8,7 +8,8 @@ bool
 check_collision(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
-    return car_struct->obs->line_detected || car_struct->obs->ultrasonic_detected;
+    return car_struct->obs->line_detected
+           || car_struct->obs->ultrasonic_detected;
 }
 
 void
@@ -17,26 +18,28 @@ motor_control_task(void *params)
     car_struct_t *car_struct = (car_struct_t *)params;
     for (;;)
     {
-        printf("Collision: %d\n", check_collision(car_struct));
-        if (check_collision(car_struct))
-        {
-            turn(DIRECTION_LEFT, 90, 80u, car_struct);
-
-//            if (check_collision(car_struct))
-//            {
-//                turn(180, car_struct);
-//
-//                if (check_collision(car_struct))
-//                {
-//                    turn(90, car_struct);
-//                }
-//            }
-        }
-        else
-        {
-            set_wheel_direction(DIRECTION_FORWARD);
-            set_wheel_speed_synced(90u, car_struct);
-        }
+        //        printf("Collision: %d\n", check_collision(car_struct));
+        //        if (check_collision(car_struct))
+        //        {
+        //            turn(DIRECTION_LEFT, 90, 80u, car_struct);
+        //
+        ////            if (check_collision(car_struct))
+        ////            {
+        ////                turn(180, car_struct);
+        ////
+        ////                if (check_collision(car_struct))
+        ////                {
+        ////                    turn(90, car_struct);
+        ////                }
+        ////            }
+        //        }
+        //        else
+        //        {
+        //            set_wheel_direction(DIRECTION_FORWARD);
+        //            set_wheel_speed_synced(90u, car_struct);
+        //        }
+        set_wheel_direction(DIRECTION_FORWARD);
+        set_wheel_speed_synced(90u, car_struct);
         vTaskDelay(pdMS_TO_TICKS(5));
     }
 }
@@ -49,8 +52,7 @@ h_main_irq_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_left_sem,
-                              &xHigherPriorityTaskWoken);
+        xSemaphoreGiveFromISR(g_left_sem, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 
@@ -59,8 +61,7 @@ h_main_irq_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_right_sem,
-                              &xHigherPriorityTaskWoken);
+        xSemaphoreGiveFromISR(g_right_sem, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
@@ -81,8 +82,8 @@ main(void)
     car_struct_t car_struct = { .p_right_motor = &motor_right,
                                 .p_left_motor  = &motor_left,
                                 .p_pid         = &pid,
-                                .obs = &obs,
-                               .p_direction = &direction};
+                                .obs           = &obs,
+                                .p_direction   = &direction };
 
     // ultra
     ultrasonic_init(&car_struct);
@@ -94,14 +95,14 @@ main(void)
     line_tasks_init(&car_struct);
     printf("Line sensor initialized!\n");
 
-    //motor
+    // motor
     motor_init(&car_struct);
     motor_tasks_init(&car_struct, &h_main_irq_handler);
     printf("Motor initialized!\n");
 
     // Magnetometer
     magnetometer_init(&car_struct);
-//    magnetometer_tasks_init(&car_struct);
+    //    magnetometer_tasks_init(&car_struct);
     printf("Magnetometer initialized!\n");
 
     // control task

@@ -7,6 +7,8 @@
 #define MOTOR_SPEED_H
 
 #include "motor_init.h"
+#include "magnetometer_init.h"
+#include "magnetometer_direction.h"
 
 /*!
  * @brief Interrupt handler for the wheel sensor
@@ -101,6 +103,9 @@ set_wheel_speed(uint32_t pwm_level, motor_t *p_motor)
 void
 set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *pp_car_strut)
 {
+    updateDirection(pp_car_strut->p_direction);
+    pp_car_strut->p_direction->target_yaw = pp_car_strut->p_direction->yaw;
+
     set_wheel_speed(pwm_level, pp_car_strut->p_left_motor);
     set_wheel_speed(pwm_level, pp_car_strut->p_right_motor);
 }

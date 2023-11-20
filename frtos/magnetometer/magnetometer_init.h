@@ -282,6 +282,7 @@ magnetometer_init(car_struct_t *p_car_struct)
     p_car_struct->p_direction->roll        = 0;
     p_car_struct->p_direction->pitch       = 0;
     p_car_struct->p_direction->yaw         = 0;
+    p_car_struct->p_direction->target_yaw  = 0;
     p_car_struct->p_direction->orientation = NORTH;
     p_car_struct->p_direction->roll_angle  = LEFT;
     p_car_struct->p_direction->pitch_angle = UP;
