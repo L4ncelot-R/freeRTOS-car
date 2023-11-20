@@ -8,9 +8,6 @@
 #ifndef MOTOR_PID_H
 #define MOTOR_PID_H
 
-#include "magnetometer_init.h"
-#include "magnetometer_direction.h"
-
 /*!
  * @brief Compute the control signal using PID controller
  * @param integral The integral term of the PID controller

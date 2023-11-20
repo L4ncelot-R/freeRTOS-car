@@ -121,7 +121,8 @@ turn(uint32_t      direction,
 
     updateDirection(pp_car_struct->p_direction);
     float initial_yaw = pp_car_struct->p_direction->yaw;
-    float target_yaw  = adjust_yaw(initial_yaw + degree);
+    float target_yaw  = (direction == DIRECTION_LEFT) ? initial_yaw - degree
+                                                    : initial_yaw + degree;
 
     turn_to_yaw(direction, target_yaw, pwm_level, pp_car_struct);
 }
