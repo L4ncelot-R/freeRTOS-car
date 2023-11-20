@@ -100,7 +100,7 @@ turn_to_yaw(uint32_t      direction,
     }
 
     pp_car_struct->p_pid->use_pid = true;
-    vTaskDelay(pdMS_TO_TICKS(50));
+    vTaskDelay(pdMS_TO_TICKS(1000));
 }
 
 /*!

@@ -13,7 +13,12 @@ check_collision(void *params)
            || car_struct->obs->ultrasonic_detected;
 }
 
-bool
+/*!
+ * @brief Check if the car is on the line
+ * @param params
+ * @return
+ */
+uint8_t
 check_line_touch(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
@@ -29,29 +34,47 @@ motor_control_task(void *params)
 
     set_wheel_direction(DIRECTION_FORWARD);
     set_wheel_speed_synced(90u, car_struct);
-    distance_to_stop(car_struct, 17);
-    vTaskDelay(pdMS_TO_TICKS(1000));
 
-    turn(DIRECTION_LEFT, 90, 90u, car_struct);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    set_wheel_direction(DIRECTION_FORWARD);
-    set_wheel_speed_synced(90u, car_struct);
-    distance_to_stop(car_struct, 17);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    turn(DIRECTION_RIGHT, 90, 90u, car_struct);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    set_wheel_direction(DIRECTION_FORWARD);
-    set_wheel_speed_synced(90u, car_struct);
-    distance_to_stop(car_struct, 17);
-    vTaskDelay(pdMS_TO_TICKS(1000));
-
-    set_wheel_direction(DIRECTION_MASK);
-    set_wheel_speed_synced(0u, car_struct);
     for (;;)
-        ;
+    {
+        uint8_t temp = check_line_touch(car_struct);
+        switch (temp)
+        {
+            default:
+                continue;
+            case 0b01:
+                car_struct->p_right_motor->speed.current_cms
+                    += SLOT_DISTANCE_CM;
+            case 0b10:
+                car_struct->p_right_motor->speed.current_cms
+                    -= SLOT_DISTANCE_CM;
+            case 0b11:
+                vTaskDelay(pdMS_TO_TICKS(1000));
+                turn(DIRECTION_LEFT, 90u, 90u, car_struct);
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
+}
+
+void
+obs_task(void *params)
+{
+    car_struct_t *car_struct = (car_struct_t *)params;
+
+    set_wheel_direction(DIRECTION_FORWARD);
+    set_wheel_speed_synced(90u, car_struct);
+
+    for (;;)
+    {
+        if (car_struct->obs->ultrasonic_detected)
+        {
+            turn(DIRECTION_LEFT, 180u, 90u, car_struct);
+            set_wheel_direction(DIRECTION_FORWARD);
+            set_wheel_speed_synced(90u, car_struct);
+        }
+        vTaskDelay(pdMS_TO_TICKS(50));
+    }
 }
 
 void
