@@ -40,7 +40,7 @@ main (void)
     printf("Test started!\n");
 
     barcode_sensor_setup();
-    initialize_car_state();
+    // initialize_car_state();
 
     launch();
 
