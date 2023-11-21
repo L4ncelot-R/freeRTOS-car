@@ -18,7 +18,7 @@ check_obstacle(void *pvParameters)
     while (true)
     { // Put trigger pin high for 10us
         gpio_put(TRIG_PIN, 1);
-        sleep_us(10);
+        vTaskDelay(1);
         gpio_put(TRIG_PIN, 0);
 
         // Wait for echo pin to go high

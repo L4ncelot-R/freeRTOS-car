@@ -77,11 +77,12 @@ obs_task(void *params)
     {
         if (car_struct->obs->ultrasonic_detected)
         {
-            // turn(DIRECTION_LEFT, 180u, 90u, car_struct);
-            // set_wheel_direction(DIRECTION_FORWARD);
-            // set_wheel_speed_synced(90u, car_struct);
+//             turn(DIRECTION_LEFT, 130u, 90u, car_struct);
+//             set_wheel_direction(DIRECTION_FORWARD);
+//             set_wheel_speed_synced(90u, car_struct);
+//
             revert_wheel_direction();
-            distance_to_stop(car_struct, 25.f);
+            distance_to_stop(car_struct, 100.f);
         }
         vTaskDelay(pdMS_TO_TICKS(50));
     }
@@ -183,13 +184,13 @@ main(void)
     //             &h_motor_turning_task_handle);
 
     // obs task
-    TaskHandle_t h_obs_task_handle = NULL;
-    xTaskCreate(obs_task,
-                "obs_task",
-                configMINIMAL_STACK_SIZE,
-                (void *)&car_struct,
-                PRIO,
-                &h_obs_task_handle);
+//    TaskHandle_t h_obs_task_handle = NULL;
+//    xTaskCreate(obs_task,
+//                "obs_task",
+//                configMINIMAL_STACK_SIZE,
+//                (void *)&car_struct,
+//                PRIO,
+//                &h_obs_task_handle);
 
     // turn task
         TaskHandle_t h_turn_task_handle = NULL;
