@@ -36,6 +36,11 @@ Motor module consist of 4 components:
 4. [motor_direction](frtos/motor/motor_direction.h): Sets the direction of the motor to control the car using bit masks. Includes functions that work with the magnetometer to turn the car to/by specific yaw.
 
 ## Ultrasonic Sensor
+1. Ultrasonic sensor package is in `frtos/ultrasonic_sensor`, and its configuration is in `frtos/config/ultrasonic_sensor_config.h`. It contains the drivers and FreeRTOS tasks to output and read the ultrasonic sensor data.
+
+2. [ultrasonic_init](frtos/ultrasonic_sensor/ultrasonic_init.h): Initialises the pins and struct stated in [ultrasonic_sensor_config](frtos/config/ultrasonic_sensor_config.h) and [car_config](frtos/config/car_config.h), and the free rtos tasks related. Call `ultrasonic_init` followed by `ultrasonic_tasks_init` to start.
+
+3. The function check_obstacle() updates one of the parameter in the car's obstruction struct (s_obs_struct) in [car_config](frtos/config/car_config.h) to tell the car's whether it detects an obstruction . 
 
 ## Line Sensor
 
