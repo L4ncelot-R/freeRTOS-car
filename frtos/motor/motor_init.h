@@ -76,24 +76,16 @@ motor_init(car_struct_t *car_struct)
     gpio_set_function(PWM_PIN_LEFT, GPIO_FUNC_PWM);
     gpio_set_function(PWM_PIN_RIGHT, GPIO_FUNC_PWM);
 
-    car_struct->p_left_motor->pwm.slice_num
-        = pwm_gpio_to_slice_num(PWM_PIN_LEFT);
-    car_struct->p_right_motor->pwm.slice_num
-        = pwm_gpio_to_slice_num(PWM_PIN_RIGHT);
-
     // NOTE: PWM clock is 125MHz for raspberrypi pico w by default
 
     // 125MHz / 50 = 2500kHz
-    pwm_set_clkdiv(car_struct->p_left_motor->pwm.slice_num, PWM_CLK_DIV);
-    pwm_set_clkdiv(car_struct->p_right_motor->pwm.slice_num, PWM_CLK_DIV);
+    pwm_set_clkdiv(SLICE_NUM, PWM_CLK_DIV);
 
     // L289N can accept up to 40kHz
     // 2500kHz / 100 = 25kHz
-    pwm_set_wrap(car_struct->p_left_motor->pwm.slice_num, (PWM_WRAP - 1U));
-    pwm_set_wrap(car_struct->p_right_motor->pwm.slice_num, (PWM_WRAP - 1U));
+    pwm_set_wrap(SLICE_NUM, (PWM_WRAP - 1U));
 
-    pwm_set_enabled(car_struct->p_left_motor->pwm.slice_num, true);
-    pwm_set_enabled(car_struct->p_right_motor->pwm.slice_num, true);
+    pwm_set_enabled(SLICE_NUM, true);
 }
 
 /*!

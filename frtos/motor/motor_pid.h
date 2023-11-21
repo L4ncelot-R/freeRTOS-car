@@ -18,24 +18,25 @@
 float
 compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
 {
-    float error = car_struct->p_left_motor->speed.distance_cm
-                  - car_struct->p_right_motor->speed.distance_cm;
+    //    float error = car_struct->p_left_motor->speed.distance_cm
+    //                  - car_struct->p_right_motor->speed.distance_cm;
+
+    float error = car_struct->p_right_motor->speed.distance_cm
+                  - car_struct->p_left_motor->speed.distance_cm;
 
     printf("error: %f\n", error);
     *integral += error;
 
     float derivative = error - *prev_error;
 
-    float control_signal
-        = car_struct->p_pid->kp_value * error
-          + car_struct->p_pid->ki_value * (*integral)
-          + car_struct->p_pid->kd_value * derivative;
+    float control_signal = car_struct->p_pid->kp_value * error
+                           + car_struct->p_pid->ki_value * (*integral)
+                           + car_struct->p_pid->kd_value * derivative;
 
     *prev_error = error;
 
     return control_signal;
 }
-
 
 /*!
  * @brief Repeating timer handler for the PID controller
@@ -57,8 +58,12 @@ repeating_pid_handler(struct repeating_timer *ppp_timer)
 
     float control_signal = compute_pid(&integral, &prev_error, car_strut);
 
+    //    float temp
+    //        = (float)car_strut->p_right_motor->pwm.level + control_signal *
+    //        0.05f;
+
     float temp
-        = (float)car_strut->p_right_motor->pwm.level + control_signal * 0.05f;
+        = (float)car_strut->p_left_motor->pwm.level + control_signal * 0.05f;
 
     if (temp > MAX_PWM_LEVEL)
     {
@@ -70,8 +75,8 @@ repeating_pid_handler(struct repeating_timer *ppp_timer)
         temp = MIN_PWM_LEVEL;
     }
 
-    set_wheel_speed((uint32_t)temp, car_strut->p_right_motor);
-
+    //    set_wheel_speed((uint32_t)temp, car_strut->p_right_motor);
+    set_wheel_speed((uint32_t)temp, car_strut->p_left_motor);
     return true;
 }
 

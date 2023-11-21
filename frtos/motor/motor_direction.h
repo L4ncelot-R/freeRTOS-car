@@ -49,7 +49,8 @@ revert_wheel_direction()
  * @param range acceptable range
  * @return true if the current direction is within the range of the target
  */
-bool check_direction(float current_direction, float target_direction, float range)
+bool
+check_direction(float current_direction, float target_direction, float range)
 {
     // Normalize directions to be within 0 to 360 degrees
     current_direction = fmod(current_direction, 360.0f);
@@ -65,6 +66,34 @@ bool check_direction(float current_direction, float target_direction, float rang
         return true;
     }
     return false;
+}
+
+void
+turn_by_distance(uint32_t      direction,
+                 float         distance,
+                 uint32_t      pwm_level,
+                 car_struct_t *pp_car_struct)
+{
+    pp_car_struct->p_pid->use_pid = false;
+
+    set_wheel_direction(direction);
+
+    distance_to_stop(pp_car_struct, distance);
+
+    set_wheel_direction(DIRECTION_MASK);
+    set_wheel_speed_synced(0u, pp_car_struct);
+}
+
+/*!
+ * @brief Diameter 12.5cm; circumference 39.269908169872416cm,
+ * 10 degree = circumference / 36 = 1.090831882496456cm
+ */
+void
+turn_by_10_degree(uint32_t      direction,
+                  uint32_t      pwm_level,
+                  car_struct_t *pp_car_struct)
+{
+    turn_by_distance(direction, 1.090831882496456f, pwm_level, pp_car_struct);
 }
 
 /*!

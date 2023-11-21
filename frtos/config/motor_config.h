@@ -6,6 +6,8 @@
 #define PWM_PIN_RIGHT 1U // chanel B
 #define PWM_PIN_LEFT  0U // chanel A
 
+#define SLICE_NUM     0U
+
 // IN1, IN2, IN3, IN4 on the L298N
 #define DIRECTION_PIN_RIGHT_IN1 11U
 #define DIRECTION_PIN_RIGHT_IN2 12U
@@ -65,7 +67,6 @@ typedef struct
  */
 typedef struct
 {
-    uint     slice_num;
     uint     channel;
     uint16_t level;
 } motor_pwm_t;

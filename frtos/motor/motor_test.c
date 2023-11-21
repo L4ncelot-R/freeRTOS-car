@@ -7,15 +7,8 @@ motor_control_task(void *params)
     car_struct_t *car_struct = (car_struct_t *)params;
     for (;;)
     {
-        set_wheel_direction(DIRECTION_FORWARD);
-        set_wheel_speed_synced(90u, car_struct);
-
-        vTaskDelay(pdMS_TO_TICKS(10000));
-
-        revert_wheel_direction();
-        set_wheel_speed_synced(90u, car_struct);
-
-        vTaskDelay(pdMS_TO_TICKS(10000));
+        turn_by_10_degree(RIGHT, 90u, car_struct);
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
