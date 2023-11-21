@@ -47,7 +47,7 @@ main(void)
                 "motor_turning_task",
                 configMINIMAL_STACK_SIZE,
                 (void *)&car_struct,
-                WHEEL_CONTROL_PRIO,
+                1,
                 &h_motor_turning_task_handle);
 
     // PID timer
