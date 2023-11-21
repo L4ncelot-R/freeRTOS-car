@@ -316,7 +316,7 @@ updateDirection(volatile direction_t * g_direction)
 
     read_direction(accelerometer, magnetometer, g_direction);
 
-//    print_orientation_data(*g_direction);
+    print_orientation_data(*g_direction);
 //
 //    switch (g_direction->orientation)
 //    {

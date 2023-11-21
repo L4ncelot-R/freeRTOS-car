@@ -8,7 +8,7 @@
 #define DIRECTION_READ_DELAY (200)
 
 #define NUM_READINGS \
-    (10) // Number of readings to
+    (5) // Number of readings to
          // take before
          // calculating
          // direction

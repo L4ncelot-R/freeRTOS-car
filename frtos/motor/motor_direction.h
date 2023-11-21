@@ -10,6 +10,7 @@
 #include "motor_init.h"
 #include "magnetometer_init.h"
 #include "magnetometer_direction.h"
+#include "motor_speed.h"
 #include "math.h"
 
 /*!
@@ -48,21 +49,18 @@ revert_wheel_direction()
  * @param range acceptable range
  * @return true if the current direction is within the range of the target
  */
-bool
-check_direction(float current_direction, float target_direction, float range)
+bool check_direction(float current_direction, float target_direction, float range)
 {
     // Normalize directions to be within 0 to 360 degrees
     current_direction = fmod(current_direction, 360.0f);
-    if (current_direction < 0)
-        current_direction += 360.0f;
+    current_direction += (current_direction < 0) ? 360.0f : 0.0f;
 
     target_direction = fmod(target_direction, 360.0f);
-    if (target_direction < 0)
-        target_direction += 360.0f;
+    target_direction += (target_direction < 0) ? 360.0f : 0.0f;
 
-    // Check if current_direction is within ±1 degree of target_direction
-    if (fabs(current_direction - target_direction) <= range
-        || fabs(current_direction - target_direction) >= (360 - range))
+    // Check if current_direction is within ±range degrees of target_direction
+    float difference = fabs(current_direction - target_direction);
+    if (difference <= range || difference >= (360.0f - range))
     {
         return true;
     }
@@ -91,6 +89,7 @@ turn_to_yaw(uint32_t      direction,
     for (;;)
     {
         updateDirection(pp_car_struct->p_direction);
+        print_orientation_data(*pp_car_struct->p_direction);
         if (check_direction(pp_car_struct->p_direction->yaw, target_yaw, 1))
         {
             set_wheel_direction(DIRECTION_MASK);
