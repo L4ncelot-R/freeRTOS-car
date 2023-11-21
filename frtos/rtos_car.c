@@ -33,6 +33,8 @@ void
 motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
+    set_wheel_direction(DIRECTION_FORWARD);
+    set_wheel_speed_synced(90u, car_struct);
 
     for (;;)
     {
@@ -40,24 +42,19 @@ motor_control_task(void *params)
         switch (temp)
         {
             default:
-                set_wheel_direction(DIRECTION_FORWARD);
-                set_wheel_speed_synced(90u, car_struct);
-                distance_to_stop(car_struct, 50.f);
-                vTaskDelay(pdMS_TO_TICKS(3000));
                 break;
             case 0b01:
-                car_struct->p_right_motor->speed.current_cms
-                    += SLOT_DISTANCE_CM * 1000.f;
+                car_struct->p_right_motor->speed.distance_cm
+                    -= SLOT_DISTANCE_CM;
                 break;
             case 0b10:
-                car_struct->p_right_motor->speed.current_cms
-                    -= SLOT_DISTANCE_CM * 1000.f;
+                car_struct->p_right_motor->speed.distance_cm
+                    += SLOT_DISTANCE_CM;
                 break;
             case 0b11:
-                // set_wheel_direction(DIRECTION_MASK);
-                // set_wheel_speed_synced(0u, car_struct);
-                // vTaskDelay(pdMS_TO_TICKS(1000));
-                // turn(DIRECTION_LEFT, 90u, 90u, car_struct);
+                turn(DIRECTION_LEFT, 90u, 90u, car_struct);
+                set_wheel_direction(DIRECTION_FORWARD);
+                set_wheel_speed_synced(90u, car_struct);
                 break;
         }
 
@@ -82,7 +79,7 @@ obs_task(void *params)
 //             set_wheel_speed_synced(90u, car_struct);
 //
             revert_wheel_direction();
-            distance_to_stop(car_struct, 100.f);
+            distance_to_stop(car_struct, 20.f);
         }
         vTaskDelay(pdMS_TO_TICKS(50));
     }
@@ -96,14 +93,14 @@ turn_task(void *params)
         for (;;)
         {
                 set_wheel_direction(DIRECTION_FORWARD);
-                set_wheel_speed_synced(90u, car_struct);
+                set_wheel_speed_synced(89u, car_struct);
 
-                distance_to_stop(car_struct, 50.f);
+                distance_to_stop(car_struct, 20.f);
                 vTaskDelay(pdMS_TO_TICKS(1000));
 
 //                turn_to_yaw(DIRECTION_LEFT, 230.f, 80u, car_struct);
 
-                turn(DIRECTION_RIGHT, 50.f, 90u, car_struct);
+                turn(DIRECTION_RIGHT, 80.f, 90u, car_struct);
                 vTaskDelay(pdMS_TO_TICKS(1000));
         }
 }
@@ -174,14 +171,14 @@ main(void)
 
     sleep_ms(1000u);
 
-    // control task
-    // TaskHandle_t h_motor_turning_task_handle = NULL;
-    // xTaskCreate(motor_control_task,
-    //             "motor_turning_task",
-    //             configMINIMAL_STACK_SIZE,
-    //             (void *)&car_struct,
-    //             PRIO,
-    //             &h_motor_turning_task_handle);
+     // control task
+//     TaskHandle_t h_motor_turning_task_handle = NULL;
+//     xTaskCreate(motor_control_task,
+//                 "motor_turning_task",
+//                 configMINIMAL_STACK_SIZE,
+//                 (void *)&car_struct,
+//                 PRIO,
+//                 &h_motor_turning_task_handle);
 
     // obs task
 //    TaskHandle_t h_obs_task_handle = NULL;
