@@ -2,6 +2,7 @@
 
 #ifndef BARCODE_SENSOR_INIT_H
 #define BARCODE_SENSOR_INIT_H
+#define DEBOUNCE_DELAY_MS 100
 
 #include <stdio.h>
 #include "pico/stdlib.h"
@@ -13,8 +14,9 @@
 #include "message_buffer.h"
 #include "semphr.h"
 
-#include "barcode_sensor_config.h"
+#include "line_sensor_config.h"
 #include "line_sensor_init.h"
+
 
 // Set barcode time to 0
 static TickType_t lastBarcodeTime = 0;
