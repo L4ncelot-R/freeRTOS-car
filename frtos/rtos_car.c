@@ -18,6 +18,11 @@ check_line_touch(void *params)
            | (car_struct->obs->right_sensor_detected);
 }
 
+/**
+ * @brief Check if the car is on the line or if there is an obstacle
+ * @param params  The car_struct
+ * @return 1 if there is an obstacle, 0 otherwise
+ */
 bool
 check_collision(void *params)
 {

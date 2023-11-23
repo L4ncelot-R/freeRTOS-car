@@ -44,6 +44,9 @@ Motor module consist of 4 components:
 
 ## Line Sensor
 
+The Line sensor package is in `frtos/line_sensor`, and its configuration is in `frtos/config/line_sensor_config.h`. It
+contains the drivers and FreeRTOS tasks to read the line sensor data and update the car's obstruction struct.
+
 ## Magnetometer
 
 The magnetometer used is the [LSM303DLHC](https://www.st.com/resource/en/datasheet/lsm303dlhc.pdf) from STMicroelectronics.
