@@ -317,46 +317,6 @@ updateDirection(volatile direction_t * g_direction)
     read_direction(accelerometer, magnetometer, g_direction);
 
     print_orientation_data(*g_direction);
-//
-//    switch (g_direction->orientation)
-//    {
-//        case NORTH:
-//            cur_y++;
-//            break;
-//        case EAST:
-//            cur_x++;
-//            break;
-//        case SOUTH:
-//            cur_y--;
-//            break;
-//        case WEST:
-//            cur_x--;
-//            break;
-//        case NORTH_EAST:
-//            cur_x++;
-//            cur_y++;
-//            break;
-//        case SOUTH_EAST:
-//            cur_x++;
-//            cur_y--;
-//            break;
-//        case SOUTH_WEST:
-//            cur_x--;
-//            cur_y--;
-//            break;
-//        case NORTH_WEST:
-//            cur_x--;
-//            cur_y++;
-//            break;
-//    }
-
-    // Update the map based on the direction of the car (N, E, S, W)
-    //    update_map(g_direction.orientation, cur_x, cur_y);
-
-    //    printf("Current Position: (%d, %d)\n", cur_x, cur_y);
-    //    print_map();
-
-    //    print_roll_and_pitch(g_direction.roll_angle, g_direction.pitch_angle);
 }
 
 void
