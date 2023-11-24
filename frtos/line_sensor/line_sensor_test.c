@@ -2,7 +2,6 @@
 #include "line_sensor_init.h"
 #include "car_config.h"
 
-
 int
 main(void)
 {
@@ -10,7 +9,7 @@ main(void)
 
     obs_t obs;
 
-    car_struct_t car_struct = {.obs = &obs};
+    car_struct_t car_struct = { .obs = &obs };
 
     sleep_ms(2000);
 

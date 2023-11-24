@@ -3,7 +3,7 @@
 #include "magnetometer_direction.h"
 #include "map.h"
 
-#define DIRECTION_TASK_PRIORITY             (tskIDLE_PRIORITY + 1UL)
+#define DIRECTION_TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
 
 void
 launch()
@@ -21,16 +21,16 @@ launch()
 }
 
 int
-main (void)
+main(void)
 {
     stdio_usb_init();
 
     direction_t direction;
 
-    car_struct_t car_struct = {.p_direction = &direction};
+    car_struct_t car_struct = { .p_direction = &direction };
 
-    int grid_rows = 10;  // Define the number of rows in your grid
-    int grid_cols = 10;  // Define the number of columns in your grid
+    int grid_rows = 10; // Define the number of rows in your grid
+    int grid_cols = 10; // Define the number of columns in your grid
 
     car_path_grid = create_grid(grid_rows, grid_cols);
 
@@ -39,13 +39,13 @@ main (void)
 
     magnetometer_init(&car_struct);
 
-//    printf("Magnetometer initialized!\n");
+    //    printf("Magnetometer initialized!\n");
 
     magnetometer_tasks_init(&car_struct);
 
     vTaskStartScheduler();
 
-//    launch();
+    //    launch();
 
-    return(0);
+    return (0);
 }

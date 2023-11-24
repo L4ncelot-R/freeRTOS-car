@@ -9,10 +9,14 @@
  *          The yaw is calculated using the magnetometer and accelerometer data
  *          The roll, pitch and yaw are combined to calculate the direction
  *          of the car with a complementary filter and compensating for the
- *          temperature.
+ *          temperature. (existing)
  *
  *          The complementary filter is used to combine the accelerometer
  *          and magnetometer data (yaw) to calculate the direction of the car
+ *
+ *          Complementary Filter was used previously, but it was not accurate
+ *          enough. The yaw calculated from the magnetometer data was used
+ *          instead.
  *
  *          Source:
  *          https://www.nxp.com/docs/en/application-note/AN3461.pdf
@@ -80,7 +84,8 @@ calculate_yaw_magnetometer(int16_t magnetometer[3])
  * @return              Compensated Yaw
  */
 float
-compensate_magnetometer(float yaw_mag, int16_t temperature) {
+compensate_magnetometer(float yaw_mag, int16_t temperature)
+{
     // Calculate temperature difference from the reference temperature
     uint delta_temp = temperature - TEMPERATURE_OFFSET;
 
@@ -190,11 +195,11 @@ calculate_compass_direction(float yaw)
  * @param compass_direction     Compass Direction
  */
 static inline void
-update_orientation_data(float               roll,
-                        float               pitch,
-                        float               yaw,
-                        compass_direction_t compass_direction,
-                        volatile direction_t        *g_direction)
+update_orientation_data(float                 roll,
+                        float                 pitch,
+                        float                 yaw,
+                        compass_direction_t   compass_direction,
+                        volatile direction_t *g_direction)
 {
     g_direction->roll        = roll;
     g_direction->roll_angle  = (roll > 0) ? LEFT : RIGHT;
@@ -211,8 +216,8 @@ update_orientation_data(float               roll,
  * @param magnetometer  Magnetometer Data
  */
 static void
-read_direction(int16_t      acceleration[3],
-               int16_t      magnetometer[3],
+read_direction(int16_t               acceleration[3],
+               int16_t               magnetometer[3],
                volatile direction_t *g_direction)
 {
 
@@ -301,7 +306,7 @@ print_roll_and_pitch(angle_t roll_angle, angle_t pitch_angle)
 }
 
 void
-updateDirection(volatile direction_t * g_direction)
+updateDirection(volatile direction_t *g_direction)
 {
     int16_t magnetometer[3];
     int16_t accelerometer[3];
@@ -323,7 +328,7 @@ void
 monitor_direction_task(void *pvParameters)
 {
     volatile direction_t *p_direction = NULL;
-    p_direction = (direction_t *) pvParameters;
+    p_direction                       = (direction_t *)pvParameters;
 
     for (;;)
     {
@@ -339,7 +344,7 @@ magnetometer_tasks_init(car_struct_t *car_struct)
     xTaskCreate(monitor_direction_task,
                 "Direction Task",
                 configMINIMAL_STACK_SIZE,
-                (void *) car_struct->p_direction,
+                (void *)car_struct->p_direction,
                 PRIO,
                 &h_direction_task);
 }
