@@ -31,7 +31,8 @@ SemaphoreHandle_t g_left_sensor_sem = NULL;
 static inline void
 line_sensor_init(car_struct_t *p_car_struct)
 {
-    p_car_struct->obs->left_sensor_detected, p_car_struct->obs->left_sensor_detected = false;
+    p_car_struct->obs->left_sensor_detected,
+        p_car_struct->obs->left_sensor_detected = false;
 
     g_left_sensor_sem = xSemaphoreCreateBinary();
 
@@ -40,7 +41,6 @@ line_sensor_init(car_struct_t *p_car_struct)
     // Initialise 3 GPIO pins and set them to input
     gpio_init_mask(mask);
     gpio_set_dir_in_masked(mask);
-
 }
 
 /**
@@ -48,35 +48,37 @@ line_sensor_init(car_struct_t *p_car_struct)
  * @param rt
  * @return True (To keep the timer running)
  */
-bool h_left_sensor_timer_handler(repeating_timer_t *repeatingTimer) {
+bool
+h_left_sensor_timer_handler(repeating_timer_t *repeatingTimer)
+{
 
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xSemaphoreGiveFromISR(g_left_sensor_sem,
-                          &xHigherPriorityTaskWoken);
+    xSemaphoreGiveFromISR(g_left_sensor_sem, &xHigherPriorityTaskWoken);
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     return true;
 }
 
-
 void
-monitor_line_sensor_task(void *pvParameters) {
+monitor_line_sensor_task(void *pvParameters)
+{
     volatile obs_t *p_obs = NULL;
-    p_obs = (obs_t *) pvParameters;
+    p_obs                 = (obs_t *)pvParameters;
 
     for (;;)
     {
-//        if (xSemaphoreTake(g_left_sensor_sem, portMAX_DELAY) == pdTRUE)
-//        {
-            // Set the flag to notify the task
-            p_obs->left_sensor_detected = gpio_get(LEFT_SENSOR_PIN);
-            p_obs->right_sensor_detected = gpio_get(RIGHT_SENSOR_PIN);
 
-	    // printf("Left Sensor: %d\n", p_obs->line_detected);
-            vTaskDelay(pdMS_TO_TICKS(LINE_SENSOR_READ_DELAY));
-//        }
+        // Set the flag to notify the task
+        p_obs->left_sensor_detected  = gpio_get(LEFT_SENSOR_PIN);
+        p_obs->right_sensor_detected = gpio_get(RIGHT_SENSOR_PIN);
+
+        vTaskDelay(pdMS_TO_TICKS(LINE_SENSOR_READ_DELAY));
     }
 }
 
+/**
+ * @brief Initialise the tasks for the line sensor
+ * @param car_struct  The car struct
+ */
 void
 line_tasks_init(car_struct_t *car_struct)
 {
@@ -88,6 +90,5 @@ line_tasks_init(car_struct_t *car_struct)
                 PRIO,
                 &h_monitor_line_sensor_task);
 }
-
 
 #endif /* LINE_SENSOR_INIT_H */

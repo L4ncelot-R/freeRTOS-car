@@ -67,7 +67,7 @@ repeating_pid_handler(struct repeating_timer *ppp_timer)
 
     if (temp <= MIN_PWM_LEVEL)
     {
-        temp = MIN_PWM_LEVEL + 1u;
+        temp = MIN_PWM_LEVEL;
     }
 
     set_wheel_speed((uint32_t)temp, car_strut->p_right_motor);
