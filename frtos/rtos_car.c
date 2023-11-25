@@ -3,6 +3,7 @@
 #include "ultrasonic_sensor.h"
 #include "car_config.h"
 #include "motor_init.h"
+#include "frontend.h"
 
 /*!
  * @brief Check if the car is on the line
@@ -150,6 +151,9 @@ main(void)
                                 .p_pid         = &pid,
                                 .obs           = &obs,
                                 .p_direction   = &direction };
+
+    // webserver frontend
+    webserver_init(&car_struct);
 
     // Magnetometer
     magnetometer_init(&car_struct);

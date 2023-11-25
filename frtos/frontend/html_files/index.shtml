@@ -54,6 +54,11 @@
             margin-top: 20px;
         }
 
+        .obstacle-output {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
         .orientation-output {
             font-size: 24px;
             margin-top: 20px;
@@ -91,6 +96,9 @@
         </div>
         <div class="pid-output">
             <p>PID Controller Output: <!--#pid--></p>
+        </div>
+        <div class="obstacle-output">
+            <p>Obstacle: <!--#obstacle--></p>
         </div>
         <div class="orientation-output">
             <p>Orientation: <!--#orient--></p>
