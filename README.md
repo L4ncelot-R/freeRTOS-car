@@ -30,10 +30,10 @@ cp freeRTOS-car.uf2 /media/$USER/RPI-RP2
 ## Motors
 Motor module consist of 4 components:
 
-1. [motor_init](frtos/motor/motor_init.h): Initialises the pins and struct stated in [motor_config](frtos/config/motor_config.h) and [car_config](frtos/config/car_config.h), and the free rtos tasks related. Call `motor_init` followed by `motor_tasks_init` to start.
-2. [motor_speed](frtos/motor/motor_speed.h): Monitors the speed of the motors by interrupt. Each **falling edge** of the wheel encoder will trigger the interrupt and the time elapsed since last trigger will be recorded and thus calculate the speed and distance travelled since boot. Includes functions to adjust the duty cycle of the motor.
-3. [motor_pid](frtos/motor/motor_pid.h): PID function to match the **right** motor duty cycle to the **left** motor such that the car can move straight, with 50ms interval.
-4. [motor_direction](frtos/motor/motor_direction.h): Sets the direction of the motor to control the car using bit masks. Includes functions that work with the magnetometer to turn the car to/by specific yaw.
+1. [motor_init](frtos/motor/motor_init.h): Initialises the pins and struct stated in [motor_config](frtos/config/motor_config.h) and [car_config](frtos/config/car_config.h), and the free rtos tasks related. Call `motor_init` followed by `motor_tasks_init` to initilise the parameters and define the tasks.
+2. [motor_speed](frtos/motor/motor_speed.h): Monitors the speed of the motors by interrupt. Each **falling edge** of the wheel encoder will trigger the interrupt and the time elapsed since last trigger will be recorded and thus calculate the speed and distance travelled since boot. Typically, each interrupt will record one slot length of the distance travelled, calculated and defined in [motor_config](frtos/config/motor_config.h). Includes functions to adjust the duty cycle of the motor for speed control.
+3. [motor_pid](frtos/motor/motor_pid.h): PID function to match the one motor duty cycle to the other motor such that the car can move straight, with 50ms interval, by comparing the difference in distance travelled by each wheel.
+4. [motor_direction](frtos/motor/motor_direction.h): Sets and changes the direction of the motor to control the car using bit masks. Includes functions that work with the magnetometer to turn the car to/by specific yaw.
 
 ## Ultrasonic Sensor
 1. Ultrasonic sensor package is in `frtos/ultrasonic_sensor`, and its configuration is in `frtos/config/ultrasonic_sensor_config.h`. It contains the drivers and FreeRTOS tasks to output and read the ultrasonic sensor data.
