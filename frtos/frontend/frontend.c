@@ -16,7 +16,7 @@ int main() {
                                 .p_pid         = &pid,
                                 .obs = &obs};
 
-    webserver_init(&car_struct);
+    webserver_init(&car_struct); //to test webserver only, remove car_struct from all frontend files
     
     
     // Start the FreeRTOS scheduler
