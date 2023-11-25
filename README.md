@@ -69,4 +69,37 @@ The final version of the magnetometer uses a **moving average filter** to smooth
 
 ## Barcode (Line) Sensor
 
+
 ## WiFi (Web Server) Module
+
+The WiFi (Web Server) Module within this project integrates Server-Side Includes (SSI) and Common Gateway Interface (CGI) handlers from the lwIP library, facilitating a web interface to display information and receive controls from a webpage.
+
+### Components Overview
+
+1. **[frontend.h](frtos/frontend/frontend.h):** This component initializes and manages the web server frontend. It establishes the initial connection to the WiFi network using environment variables such as WIFI_SSID and WIFI_PASSWORD.
+
+2. **[html_files](frtos/frontend/html_files):** This directory contains HTML files used for the web server display. These files are linked into lwIP to enable server-side processing and rendering.
+
+3. **[ssi.h](frtos/frontend/ssi.h):** Handles Server-Side Includes (SSI), which dynamically inserts content into web pages, allowing the display of real-time or changing information.
+
+4. **[cgi.h](frtos/frontend/cgi.h):** Manages Common Gateway Interface (CGI) handlers, enabling the reception of controls and user interactions from the web interface.
+
+5. **makefsdata Utility:** This tool generates `htmldata.c` by converting HTML files into hexadecimal representation to link them into lwIP. It involves converting filenames into hex, defining HTTP headers for file extensions, and converting HTML content into a hex array for efficient storage and retrieval.
+
+    - **Automatic Generation of htmldata.c:**
+        - `makefsdata.c` creates `makefsdata.exe` automatically upon build, as specified in `CMakeLists.txt`.
+        - `makefsdata.exe` in turn generates `htmldata.c`, which links the HTML pages to lwIP for server-side processing, enabling seamless integration of web content.
+
+### Functionality and Implementation Details
+
+The WiFi (Web Server) Module offers the following functionalities:
+
+- **Dynamic Content Display:** SSI allows the server to include dynamic content in web pages, facilitating real-time updates or information display.
+
+- **User Interaction Handling:** CGI enables the server to process user interactions received from the web interface, enabling control and interaction with the Pico-based car.
+
+- **WiFi Connectivity:** `frontend.h` establishes a connection to the designated WiFi network using the environment variables WIFI_SSID and WIFI_PASSWORD. This connection is essential for enabling communication between the Pico device and the network.
+
+
+The integration of SSI, CGI, and the makefsdata tool empowers the WiFi (Web Server) Module to provide a user-friendly interface for monitoring and controlling the Pico-based car within the defined network environment.
+
