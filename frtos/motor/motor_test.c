@@ -5,9 +5,12 @@ void
 motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
+    set_wheel_direction(DIRECTION_FORWARD);
+    set_wheel_speed_synced(90u, car_struct);
+    car_struct->p_pid->use_pid= false;
     for (;;)
     {
-        turn_by_10_degree(RIGHT, 90u, car_struct);
+        // turn_by_10_degree(RIGHT, 90u, car_struct);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

@@ -13,7 +13,7 @@
 #include "message_buffer.h"
 #include "semphr.h"
 
-#include "barcode_sensor_config.h"
+#include "line_sensor_config.h"
 #include "line_sensor_init.h"
 
 // Set barcode time to 0

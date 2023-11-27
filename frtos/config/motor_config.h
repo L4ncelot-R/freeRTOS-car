@@ -9,11 +9,11 @@
 #define SLICE_NUM     0U
 
 // IN1, IN2, IN3, IN4 on the L298N
-#define DIRECTION_PIN_RIGHT_IN1 11U
-#define DIRECTION_PIN_RIGHT_IN2 12U
+#define DIRECTION_PIN_RIGHT_IN1 7U //11
+#define DIRECTION_PIN_RIGHT_IN2 6U //12
 
-#define DIRECTION_PIN_LEFT_IN3 19U
-#define DIRECTION_PIN_LEFT_IN4 20U
+#define DIRECTION_PIN_LEFT_IN3 3U //19
+#define DIRECTION_PIN_LEFT_IN4 2U //20
 
 // to turn one side
 #define DIRECTION_RIGHT_FORWARD  (1U << DIRECTION_PIN_RIGHT_IN2)
@@ -102,23 +102,8 @@ typedef struct
 
 } motor_t;
 
-typedef struct
-{
-    float         starting_distance_cm;
-    float         distance_to_travel_cm;
-    volatile bool is_running;
-} distance_to_stop_t;
-
 SemaphoreHandle_t g_left_sem;
 SemaphoreHandle_t g_right_sem;
 
-// for testing
-// typedef struct
-//{
-//    motor_t     * p_left_motor;
-//    motor_t     * p_right_motor;
-//    motor_pid_t * p_pid;
-//
-//} car_struct_t;
 
 #endif /* MOTOR_CONFIG_H */

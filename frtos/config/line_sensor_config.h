@@ -8,4 +8,6 @@
 #define LEFT_SENSOR_PIN                         ( 26 )
 #define RIGHT_SENSOR_PIN                        ( 27 )
 
+#define BARCODE_SENSOR_PIN                      ( 22 )
+
 #endif //CONFIG_H
