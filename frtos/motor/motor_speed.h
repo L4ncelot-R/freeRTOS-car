@@ -102,7 +102,7 @@ set_wheel_speed(uint32_t pwm_level, motor_t *p_motor)
 void
 set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *pp_car_strut)
 {
-    set_wheel_speed(MAX_PWM_LEVEL, pp_car_strut->p_left_motor);
+    set_wheel_speed(pwm_level, pp_car_strut->p_left_motor);
     set_wheel_speed(pwm_level, pp_car_strut->p_right_motor);
 }
 
