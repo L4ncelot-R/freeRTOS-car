@@ -68,7 +68,7 @@ a bias calculation. This method was not used in the final version, because the r
 The final version of the magnetometer uses a **moving average filter** to smooth the data and a bias of 0 degrees.
 
 ## Barcode (Line) Sensor
-
+The barcode sensor uses edge interrupts to trigger the barcode sensor when the sensor hits a black line, which then measures the width of the black line to white, and stores it in an array. The Code39 barcode library is used as a reference for the barcode decoding function.
 
 ## WiFi (Web Server) Module
 
