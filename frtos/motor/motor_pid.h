@@ -67,16 +67,16 @@ repeating_pid_handler(struct repeating_timer *ppp_timer)
 
     if (temp > MAX_PWM_LEVEL)
     {
-        temp = MAX_PWM_LEVEL;
+        temp = 70.0f;
     }
 
     if (temp <= MIN_PWM_LEVEL)
     {
-        temp = MIN_PWM_LEVEL;
+        temp = 60.0f;
     }
-
-    //    set_wheel_speed((uint32_t)temp, car_strut->p_right_motor);
     set_wheel_speed((uint32_t)temp, car_strut->p_left_motor);
+    printf("right speed: %f\n", car_strut->p_right_motor->speed.current_cms);
+    printf("left speed: %f\n", car_strut->p_left_motor->speed.current_cms);
     return true;
 }
 

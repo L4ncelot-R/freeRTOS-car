@@ -34,7 +34,7 @@ motor_control_task(void *params)
 {
     car_struct_t *car_struct = (car_struct_t *)params;
     set_wheel_direction(DIRECTION_FORWARD);
-    set_wheel_speed_synced(90u, car_struct);
+    set_wheel_speed_synced(62u, car_struct);
 
     for (;;)
     {
@@ -44,17 +44,25 @@ motor_control_task(void *params)
             default:
                 break;
             case 0b01:
-                car_struct->p_right_motor->speed.distance_cm
-                    -= SLOT_DISTANCE_CM;
+//                car_struct->p_right_motor->speed.distance_cm
+//                    -= SLOT_DISTANCE_CM;
+                set_wheel_direction(DIRECTION_LEFT_BACKWARD);
+                distance_to_stop(car_struct, SLOT_DISTANCE_CM);
+                set_wheel_direction(DIRECTION_FORWARD);
+                set_wheel_speed_synced(62u, car_struct);
                 break;
             case 0b10:
-                car_struct->p_right_motor->speed.distance_cm
-                    += SLOT_DISTANCE_CM;
+//                car_struct->p_right_motor->speed.distance_cm
+//                    += SLOT_DISTANCE_CM;
+                set_wheel_direction(DIRECTION_RIGHT_BACKWARD);
+                distance_to_stop(car_struct, SLOT_DISTANCE_CM);
+                set_wheel_direction(DIRECTION_FORWARD);
+                set_wheel_speed_synced(62u, car_struct);
                 break;
             case 0b11:
-                turn(DIRECTION_LEFT, 90u, 90u, car_struct);
+                turn(DIRECTION_LEFT, 90u, 62u, car_struct);
                 set_wheel_direction(DIRECTION_FORWARD);
-                set_wheel_speed_synced(90u, car_struct);
+                set_wheel_speed_synced(62u, car_struct);
                 break;
         }
 
@@ -172,13 +180,13 @@ main(void)
     sleep_ms(1000u);
 
      // control task
-//     TaskHandle_t h_motor_turning_task_handle = NULL;
-//     xTaskCreate(motor_control_task,
-//                 "motor_turning_task",
-//                 configMINIMAL_STACK_SIZE,
-//                 (void *)&car_struct,
-//                 PRIO,
-//                 &h_motor_turning_task_handle);
+     TaskHandle_t h_motor_turning_task_handle = NULL;
+     xTaskCreate(motor_control_task,
+                 "motor_turning_task",
+                 configMINIMAL_STACK_SIZE,
+                 (void *)&car_struct,
+                 PRIO,
+                 &h_motor_turning_task_handle);
 
     // obs task
 //    TaskHandle_t h_obs_task_handle = NULL;
@@ -189,14 +197,14 @@ main(void)
 //                PRIO,
 //                &h_obs_task_handle);
 
-    // turn task
-        TaskHandle_t h_turn_task_handle = NULL;
-        xTaskCreate(turn_task,
-                    "turn_task",
-                    configMINIMAL_STACK_SIZE,
-                    (void *)&car_struct,
-                    PRIO,
-                    &h_turn_task_handle);
+//    // turn task
+//        TaskHandle_t h_turn_task_handle = NULL;
+//        xTaskCreate(turn_task,
+//                    "turn_task",
+//                    configMINIMAL_STACK_SIZE,
+//                    (void *)&car_struct,
+//                    PRIO,
+//                    &h_turn_task_handle);
 
     // PID timer
     struct repeating_timer pid_timer;
