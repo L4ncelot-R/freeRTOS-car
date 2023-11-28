@@ -6,6 +6,7 @@ add_subdirectory(car)
 add_subdirectory(ultrasonic_sensor)
 add_subdirectory(magnetometer)
 add_subdirectory(frontend)
+add_subdirectory(map)
 
 add_executable(rtos_car rtos_car.c)
 
