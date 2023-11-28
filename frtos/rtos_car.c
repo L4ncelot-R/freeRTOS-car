@@ -31,14 +31,19 @@ check_collision(void *params)
     //    return ((car_struct->obs->left_sensor_detected << 1)
     //            | (car_struct->obs->right_sensor_detected))
     //           || car_struct->obs->ultrasonic_detected;
-    return check_line_touch(car_struct) ||
-           car_struct->obs->ultrasonic_detected;
+    return check_line_touch(car_struct) || car_struct->obs->ultrasonic_detected;
 }
 
+/*!
+ * @brief Task for going straight, shift left or right when there is a line,
+ * by changing the distance of the right wheel, so the speed of the wheel
+ * will be changed by the PID function.
+ * @param p_car_struct
+ */
 void
-motor_control_task(void *params)
+motor_control_task(void *p_car_struct)
 {
-    car_struct_t *car_struct = (car_struct_t *)params;
+    car_struct_t *car_struct = (car_struct_t *)p_car_struct;
     set_wheel_direction(DIRECTION_FORWARD);
     set_wheel_speed_synced(90u, car_struct);
 
@@ -68,6 +73,11 @@ motor_control_task(void *params)
     }
 }
 
+/*!
+ * @brief Go forward until there is an obstacle, reverse the wheel direction,
+ * travel a certain distance, then stop.
+ * @param p_car_struct
+ */
 void
 obs_task(void *params)
 {
@@ -80,10 +90,10 @@ obs_task(void *params)
     {
         if (car_struct->obs->ultrasonic_detected)
         {
-//             turn(DIRECTION_LEFT, 130u, 90u, car_struct);
-//             set_wheel_direction(DIRECTION_FORWARD);
-//             set_wheel_speed_synced(90u, car_struct);
-//
+            //             turn(DIRECTION_LEFT, 130u, 90u, car_struct);
+            //             set_wheel_direction(DIRECTION_FORWARD);
+            //             set_wheel_speed_synced(90u, car_struct);
+            //
             revert_wheel_direction();
             distance_to_stop(car_struct, 20.f);
         }
@@ -91,24 +101,28 @@ obs_task(void *params)
     }
 }
 
+/*!
+ * @brief Task to demonstrate the turning function using magnetometer
+ * @param params
+ */
 void
 turn_task(void *params)
 {
-        car_struct_t *car_struct = (car_struct_t *)params;
+    car_struct_t *car_struct = (car_struct_t *)params;
 
-        for (;;)
-        {
-                set_wheel_direction(DIRECTION_FORWARD);
-                set_wheel_speed_synced(89u, car_struct);
+    for (;;)
+    {
+        set_wheel_direction(DIRECTION_FORWARD);
+        set_wheel_speed_synced(89u, car_struct);
 
-                distance_to_stop(car_struct, 20.f);
-                vTaskDelay(pdMS_TO_TICKS(1000));
+        distance_to_stop(car_struct, 20.f);
+        vTaskDelay(pdMS_TO_TICKS(1000));
 
-//                turn_to_yaw(DIRECTION_LEFT, 230.f, 80u, car_struct);
+        //                turn_to_yaw(DIRECTION_LEFT, 230.f, 80u, car_struct);
 
-                turn(DIRECTION_RIGHT, 80.f, 90u, car_struct);
-                vTaskDelay(pdMS_TO_TICKS(1000));
-        }
+        turn(DIRECTION_RIGHT, 80.f, 90u, car_struct);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
 }
 
 void
@@ -157,11 +171,11 @@ main(void)
 
     // Magnetometer
     magnetometer_init(&car_struct);
-//        magnetometer_tasks_init(&car_struct);
+    //        magnetometer_tasks_init(&car_struct);
     //    updateDirection(car_struct.p_direction);
     printf("Magnetometer initialized!\n");
 
-//    sleep_ms(1000);
+    //    sleep_ms(1000);
 
     // ultra
     ultrasonic_init(&car_struct);
@@ -180,32 +194,32 @@ main(void)
 
     sleep_ms(1000u);
 
-     // control task
-//     TaskHandle_t h_motor_turning_task_handle = NULL;
-//     xTaskCreate(motor_control_task,
-//                 "motor_turning_task",
-//                 configMINIMAL_STACK_SIZE,
-//                 (void *)&car_struct,
-//                 PRIO,
-//                 &h_motor_turning_task_handle);
+    // control task
+    //     TaskHandle_t h_motor_turning_task_handle = NULL;
+    //     xTaskCreate(motor_control_task,
+    //                 "motor_turning_task",
+    //                 configMINIMAL_STACK_SIZE,
+    //                 (void *)&car_struct,
+    //                 PRIO,
+    //                 &h_motor_turning_task_handle);
 
     // obs task
-//    TaskHandle_t h_obs_task_handle = NULL;
-//    xTaskCreate(obs_task,
-//                "obs_task",
-//                configMINIMAL_STACK_SIZE,
-//                (void *)&car_struct,
-//                PRIO,
-//                &h_obs_task_handle);
+    //    TaskHandle_t h_obs_task_handle = NULL;
+    //    xTaskCreate(obs_task,
+    //                "obs_task",
+    //                configMINIMAL_STACK_SIZE,
+    //                (void *)&car_struct,
+    //                PRIO,
+    //                &h_obs_task_handle);
 
     // turn task
-        TaskHandle_t h_turn_task_handle = NULL;
-        xTaskCreate(turn_task,
-                    "turn_task",
-                    configMINIMAL_STACK_SIZE,
-                    (void *)&car_struct,
-                    PRIO,
-                    &h_turn_task_handle);
+    TaskHandle_t h_turn_task_handle = NULL;
+    xTaskCreate(turn_task,
+                "turn_task",
+                configMINIMAL_STACK_SIZE,
+                (void *)&car_struct,
+                PRIO,
+                &h_turn_task_handle);
 
     // PID timer
     struct repeating_timer pid_timer;

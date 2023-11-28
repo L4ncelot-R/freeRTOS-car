@@ -19,8 +19,6 @@ motor_control_task(void *params)
     }
 }
 
-
-
 int
 main(void)
 {
