@@ -35,7 +35,7 @@ check_obstacle(void *pvParameters)
         // Calculate the distance (in centimeters)
         uint32_t pulse_duration = end_time - start_time;
         float    distance
-            = (pulse_duration * 0.034 / 2); // Speed of sound in cm/us
+            = (pulse_duration * 0.034 / 2); // Speed of sound in air to cm/us
 
         // printf("Distance: %.2f cm\n", distance);
 
@@ -50,6 +50,11 @@ check_obstacle(void *pvParameters)
     }
 }
 
+
+/**
+ * @brief Initialise the Ultrasonic Sensor
+ * @details Initialise the Ultrasonic Sensor Pins and set default collision value
+ */
 void
 ultrasonic_init(car_struct_t *car_struct)
 {
