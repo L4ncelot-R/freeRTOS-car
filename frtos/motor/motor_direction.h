@@ -49,7 +49,8 @@ revert_wheel_direction()
  * @param range acceptable range
  * @return true if the current direction is within the range of the target
  */
-bool check_direction(float current_direction, float target_direction, float range)
+bool
+check_direction(float current_direction, float target_direction, float range)
 {
     // Normalize directions to be within 0 to 360 degrees
     current_direction = fmod(current_direction, 360.0f);

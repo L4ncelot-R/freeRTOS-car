@@ -28,5 +28,10 @@ target_include_directories(frontend PRIVATE
         ${CMAKE_CURRENT_LIST_DIR}
         )
 
+target_compile_definitions(frontend PRIVATE
+        WIFI_SSID=\"${WIFI_SSID}\"
+        WIFI_PASSWORD=\"${WIFI_PASSWORD}\"
+)
+
 pico_enable_stdio_usb(frontend 1)
 pico_add_extra_outputs(frontend)

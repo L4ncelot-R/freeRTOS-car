@@ -6,6 +6,7 @@ add_subdirectory(car)
 add_subdirectory(ultrasonic_sensor)
 add_subdirectory(magnetometer)
 add_subdirectory(frontend)
+add_subdirectory(map)
 
 add_executable(rtos_car rtos_car.c)
 
@@ -33,6 +34,7 @@ target_link_libraries(rtos_car
         hardware_adc
         hardware_pwm
         hardware_i2c
+        pico_lwip_http
 )
 pico_enable_stdio_usb(rtos_car 1)
 pico_add_extra_outputs(rtos_car)

@@ -26,16 +26,14 @@ compute_pid(float *integral, float *prev_error, car_struct_t *car_struct)
 
     float derivative = error - *prev_error;
 
-    float control_signal
-        = car_struct->p_pid->kp_value * error
-          + car_struct->p_pid->ki_value * (*integral)
-          + car_struct->p_pid->kd_value * derivative;
+    float control_signal = car_struct->p_pid->kp_value * error
+                           + car_struct->p_pid->ki_value * (*integral)
+                           + car_struct->p_pid->kd_value * derivative;
 
     *prev_error = error;
 
     return control_signal;
 }
-
 
 /*!
  * @brief Repeating timer handler for the PID controller

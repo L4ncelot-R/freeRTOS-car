@@ -6,7 +6,6 @@
 #include "ultrasonic_sensor.h"
 #include "car_config.h"
 
-
 int
 main(void)
 {

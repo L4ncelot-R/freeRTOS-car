@@ -22,8 +22,7 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_LEFT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_left_sem,
-                              &xHigherPriorityTaskWoken);
+        xSemaphoreGiveFromISR(g_left_sem, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 
@@ -32,12 +31,10 @@ h_wheel_sensor_isr_handler(void)
         gpio_acknowledge_irq(SPEED_PIN_RIGHT, GPIO_IRQ_EDGE_FALL);
 
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        xSemaphoreGiveFromISR(g_right_sem,
-                              &xHigherPriorityTaskWoken);
+        xSemaphoreGiveFromISR(g_right_sem, &xHigherPriorityTaskWoken);
         portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
     }
 }
-
 
 /*!
  * @brief Task to monitor and control the speed of the wheel
@@ -56,15 +53,15 @@ monitor_wheel_speed_task(void *ppp_motor)
 
     for (;;)
     {
-        if ((xSemaphoreTake(*p_motor->p_sem, pdMS_TO_TICKS(100))
-            == pdTRUE) && (*p_motor->use_pid == true))
+        if ((xSemaphoreTake(*p_motor->p_sem, pdMS_TO_TICKS(100)) == pdTRUE)
+            && (*p_motor->use_pid == true))
         {
             curr_time    = time_us_64();
             elapsed_time = curr_time - prev_time;
             prev_time    = curr_time;
 
             p_motor->speed.current_cms
-                = (float) (SLOT_DISTANCE_CM_MODIFIED / elapsed_time);
+                = (float)(SLOT_DISTANCE_CM_MODIFIED / elapsed_time);
 
             p_motor->speed.distance_cm += SLOT_DISTANCE_CM;
         }
@@ -112,13 +109,14 @@ set_wheel_speed_synced(uint32_t pwm_level, car_struct_t *pp_car_strut)
  * @param distance_cm distance to travel in cm
  */
 void
-distance_to_stop(car_struct_t * pp_car_struct, float distance_cm)
+distance_to_stop(car_struct_t *pp_car_struct, float distance_cm)
 {
     float initial = pp_car_struct->p_left_motor->speed.distance_cm;
 
     for (;;)
     {
-        if (pp_car_struct->p_left_motor->speed.distance_cm - initial >= distance_cm)
+        if (pp_car_struct->p_left_motor->speed.distance_cm - initial
+            >= distance_cm)
         {
             set_wheel_direction(DIRECTION_MASK);
             set_wheel_speed_synced(0u, pp_car_struct);
@@ -127,8 +125,8 @@ distance_to_stop(car_struct_t * pp_car_struct, float distance_cm)
         vTaskDelay(pdMS_TO_TICKS(10));
     }
     vTaskDelay(pdMS_TO_TICKS(1000));
-    pp_car_struct->p_right_motor->speed.distance_cm =
-        pp_car_struct->p_left_motor->speed.distance_cm;
+    pp_car_struct->p_right_motor->speed.distance_cm
+        = pp_car_struct->p_left_motor->speed.distance_cm;
 }
 
 #endif /* MOTOR_SPEED_H */

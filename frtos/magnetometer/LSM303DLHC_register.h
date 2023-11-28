@@ -28,8 +28,6 @@
 #define LSM303_TEMP_OUT_H_M         0x31
 #define LSM303_TEMP_OUT_L_M         0x32
 
-
-
 #define ACCEL_ADDR                  0x19
 #define MAG_ADDR                    0x1E
 
