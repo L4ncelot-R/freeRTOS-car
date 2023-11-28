@@ -8,7 +8,7 @@ main(void)
     stdio_usb_init();
     maze_t       maze;
 
-    sleep_ms(7000);
+    sleep_ms(3000);
 
     printf("Test started!\n");
 
