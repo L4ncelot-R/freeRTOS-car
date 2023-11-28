@@ -13,6 +13,7 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include <stdlib.h>
 #include "time.h"
 #include "pico/rand.h"
 
@@ -30,6 +31,109 @@ generate_random(int min, int max)
     int num = (get_rand_32() % (max - min + 1)) + min;
     printf("Random number generated: %d\n", num);
     return num;
+}
+
+// Define a queue structure for BFS
+typedef struct {
+    int x;
+    int y;
+} QueueNode;
+
+typedef struct {
+    QueueNode *array;
+    int front, rear, size;
+    unsigned capacity;
+} Queue;
+
+// Function to create a new queue
+Queue* createQueue(unsigned capacity) {
+    Queue* queue = (Queue*)malloc(sizeof(Queue));
+    queue->capacity = capacity;
+    queue->front = queue->size = 0;
+    queue->rear = capacity - 1;
+    queue->array = (QueueNode*)malloc(capacity * sizeof(QueueNode));
+    return queue;
+}
+
+// Function to check if the queue is empty
+bool isEmpty(Queue* queue) {
+    return (queue->size == 0);
+}
+
+// Function to check if the queue is full
+bool isFull(Queue* queue) {
+    return (queue->size == queue->capacity);
+}
+
+// Function to enqueue a cell in the queue
+void enqueue(Queue* queue, int x, int y) {
+    if (isFull(queue))
+        return;
+    queue->rear = (queue->rear + 1) % queue->capacity;
+    queue->array[queue->rear].x = x;
+    queue->array[queue->rear].y = y;
+    queue->size = queue->size + 1;
+}
+
+// Function to dequeue a cell from the queue
+QueueNode dequeue(Queue* queue) {
+    QueueNode cell = queue->array[queue->front];
+    queue->front = (queue->front + 1) % queue->capacity;
+    queue->size = queue->size - 1;
+    return cell;
+}
+
+// Function to perform BFS and find the shortest path
+void bfs_shortest_path(maze_t *maze, int startX, int startY) {
+    // Create a queue for BFS
+    Queue* queue = createQueue(maze->height * maze->width);
+
+    // Initialize visited array
+    bool visited[maze->height][maze->width];
+    for (int i = 0; i < maze->height; i++) {
+        for (int j = 0; j < maze->width; j++) {
+            visited[i][j] = false;
+        }
+    }
+
+    // Mark the starting cell as visited and enqueue it
+    visited[startY][startX] = true;
+    enqueue(queue, startX, startY);
+
+    // Define directions (up, down, left, right)
+    int dx[] = { -1, 1, 0, 0 };
+    int dy[] = { 0, 0, -1, 1 };
+
+    // Perform BFS
+    while (!isEmpty(queue)) {
+        // Dequeue a cell and process it
+        QueueNode current = dequeue(queue);
+        int x = current.x;
+        int y = current.y;
+
+        // Process the cell (you can customize this part based on your needs)
+        // Here, we mark the cell with a special character to indicate it's part of the shortest path
+        maze->mazecells[y][x].type = 'P'; // 'P' for path
+
+        // Explore adjacent cells
+        for (int i = 0; i < 4; i++) {
+            int newX = x + dx[i];
+            int newY = y + dy[i];
+
+            // Check if the new position is within the maze boundaries
+            if (newX >= 0 && newX < maze->width && newY >= 0 && newY < maze->height) {
+                // Check if the cell is not a wall and hasn't been visited
+                if (maze->mazecells[newY][newX].type != 'X' && !visited[newY][newX]) {
+                    // Mark the new cell as visited and enqueue it
+                    visited[newY][newX] = true;
+                    enqueue(queue, newX, newY);
+                }
+            }
+        }
+    }
+
+    // Free the allocated memory for the queue
+    free(queue);
 }
 
 /**
@@ -218,7 +322,134 @@ floodfill(maze_t *maze, int x, int y, int value)
 }
 
 /**
- * @brief Task to simulate the car moving in the maze and perform floodfill
+ * @brief Function to check if the entire maze has been explored
+ * @param maze
+ * @return true if all cells are visited, false otherwise
+ */
+bool
+maze_explored(const maze_t *maze)
+{
+    for (int i = 0; i < maze->height; i++)
+    {
+        for (int j = 0; j < maze->width; j++)
+        {
+            if (maze->mazecells[j][i].type != 'X'
+                && maze->mazecells[j][i].type != 'V')
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// Update the find_shortest_path function with the newly created bfs_shortest_path function
+void find_shortest_path(maze_t *maze) {
+    // Assuming the starting point is the bottom-left corner (0, 0)
+    int startX = 0;
+    int startY = 0;
+
+    // Perform BFS to find the shortest path
+    bfs_shortest_path(maze, startX, startY);
+}
+
+void
+backtrack_to_start(maze_t *maze, int *currentX, int *currentY)
+{
+    // Get the current cell type
+    char currentCellType = maze->mazecells[*currentX][*currentY].type;
+
+    // Base case: Stop if the current cell is the start
+    if (currentCellType == 'S')
+    {
+        printf("Backtracking completed. Reached the start!\n");
+        return;
+    }
+
+    // Update the current cell as part of the backtracking path
+    maze->mazecells[*currentX][*currentY].type = 'P'; // 'P' for path
+
+    // Initialize newX and newY
+    int newX = *currentX;
+    int newY = *currentY;
+
+    // Explore adjacent cells in all directions
+    for (int i = 0; i < 4; i++)
+    {
+        // Adjust the new position based on the movement direction
+        switch ((mapping_direction_t)i)
+        {
+            case up:
+                newY++;
+                break;
+            case down:
+                newY--;
+                break;
+            case left:
+                newX--;
+                break;
+            case right:
+                newX++;
+                break;
+        }
+
+        // Check if the new position is within the maze boundaries
+        if (newX >= 0 && newX < maze->width && newY >= 0 && newY < maze->height)
+        {
+            // Check if the new cell is part of the backtracking path
+            if (maze->mazecells[newX][newY].type == 'V'
+                || maze->mazecells[newX][newY].type == 'P')
+            {
+                // Move to the new position
+                *currentX = newX;
+                *currentY = newY;
+
+                // Recursively backtrack from the new position
+                backtrack_to_start(maze, currentX, currentY);
+
+                // If backtracking is successful, stop exploring other
+                // directions
+                return;
+            }
+        }
+
+        // Reset newX and newY to the original values
+        newX = *currentX;
+        newY = *currentY;
+    }
+
+    // If no valid adjacent cells are found, backtrack to the previous position
+    switch (currentCellType)
+    {
+        case 'C':
+            maze->mazecells[*currentX][*currentY].type
+                = ' '; // Clear the car's position
+            break;
+        default:
+            maze->mazecells[*currentX][*currentY].type
+                = 'V'; // Mark as visited during backtracking
+            break;
+    }
+
+    // Print the map during backtracking
+    printf("Map during backtracking:\n");
+    print_map(maze);
+
+    // Move back to the previous position (if not at the start)
+    if (currentCellType != 'S')
+    {
+        // Update the current position to the previous position
+        *currentX = newX;
+        *currentY = newY;
+    }
+
+    // Print the map after moving back during backtracking
+    printf("Map after moving back during backtracking:\n");
+    print_map(maze);
+}
+
+/**
+ * @brief Task to explore the maze, find the shortest path, and reach the goal
  * @param pvParameters
  */
 void
@@ -228,25 +459,29 @@ combined_task(void *pvParameters)
     int     currentX = 0; // Initial X position
     int     currentY = 0; // Initial Y position
 
+    // Reset maze before floodfill
+    for (int i = 0; i < maze->height; i++)
+    {
+        for (int j = 0; j < maze->width; j++)
+        {
+            maze->mazecells[j][i].visited = 0;
+        }
+    }
+
+    // Explore the maze and perform floodfill
     for (;;)
     {
-        // Reset maze before floodfill
-        for (int i = 0; i < maze->height; i++)
-        {
-            for (int j = 0; j < maze->width; j++)
-            {
-                maze->mazecells[j][i].visited = 0;
-            }
-        }
-
         // Simulate car movement (you can replace this logic with your actual
         // movement algorithm)
         mapping_direction_t moveDirection
-            = (mapping_direction_t)(get_rand_32()
-                                    % 4); // Randomly choose a direction
+            = (mapping_direction_t)(get_rand_32() % 4);
 
         // Update the previously visited position before moving
-        maze->mazecells[currentX][currentY].type = 'V'; // 'V' for visited
+        if (maze->mazecells[currentX][currentY].type
+            != 'S') // Check if it's not the start position
+        {
+            maze->mazecells[currentX][currentY].type = 'V'; // 'V' for visited
+        }
 
         switch (moveDirection)
         {
@@ -281,8 +516,11 @@ combined_task(void *pvParameters)
         }
 
         // Update the car's position in the maze
-        // (you might want to clear the previous position before updating)
-        maze->mazecells[currentX][currentY].type = 'C'; // 'C' for car
+        if (maze->mazecells[currentX][currentY].type
+            != 'S') // Check if it's not the start position
+        {
+            maze->mazecells[currentX][currentY].type = 'C'; // 'C' for car
+        }
 
         // Print the map with the car's position
         printf("Map with the car's position:\n");
@@ -291,13 +529,14 @@ combined_task(void *pvParameters)
         // Floodfill the maze after each movement
         floodfill(maze, maze->width - 1, 0, 0);
 
-        // Check if the car has reached the goal
-        if (maze->mazecells[currentX][currentY].type == 'G')
+        // Check if the car has explored the entire maze
+        if (maze_explored(maze))
         {
-            printf("Goal reached! Stopping the task.\n");
-            // Stop the task
-            vTaskSuspend(NULL);
-            break;
+            printf("Entire maze explored! Now finding the shortest path.\n");
+
+            backtrack_to_start(maze, &currentX, &currentY);
+
+            find_shortest_path(maze);
         }
 
         vTaskDelay(
