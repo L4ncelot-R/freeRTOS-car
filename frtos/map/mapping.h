@@ -466,7 +466,7 @@ demo_shortest_path_task(void *pvParameters)
                 print_map(maze);
 
                 // Delay to simulate the car's movement
-                vTaskDelay(pdMS_TO_TICKS(500));
+                vTaskDelay(pdMS_TO_TICKS(100));
             }
         }
     }
