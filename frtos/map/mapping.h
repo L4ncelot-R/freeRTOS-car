@@ -1,11 +1,31 @@
 /**
  * @file mapping.h
- * @brief Map the environment using the line sensor and the ultrasonic sensor
+ * @author Woon Jun Wei             2200624     (Team 39)
+ * @author Wang Rongqi Richie       2201942     (Team 39)
+ * @author Poon Xiang Yuan          2200559     (Team 39)
+ * @author Benjamin Loh Choon How   2201590     (Team 78)
+ * @author Low Hong Sheng Jovian    2203654     (Team 78)
+ * @brief Simulated Mapping of the Maze
+ *
+ * @details This file contains the functions to simulate the mapping of the
+ *          maze. Maze is created with hardcoded walls, obstacles, and the goal.
+ *
+ *          Maze is then mapped by simulating the car's movement and performing
+ *          floodfill to mark the reachable cells.
+ *
+ *          The car will backtrack to the start once the entire maze is
+ *          explored.
+ *
+ *          The shortest path from start to goal is then found using BFS.
+ *
+ *          BFS is also used to demonstrate the car's movement from start to
+ *          goal.
+ *
+ *          A Queue Data Structure is used to perform BFS.
  *
  * Reference:
  * https://stackoverflow.com/questions/37207022/flood-fill-algorithm-maze
  *
- * @author Woon Jun Wei
  */
 
 #ifndef MAPPING_H
@@ -33,13 +53,18 @@ generate_random(int min, int max)
     return num;
 }
 
-// Define a queue structure for BFS
+/**
+ * Queue Node Structure
+ */
 typedef struct
 {
     int x;
     int y;
 } QueueNode;
 
+/**
+ * Queue Structure
+ */
 typedef struct
 {
     QueueNode *array;
@@ -47,7 +72,11 @@ typedef struct
     unsigned   capacity;
 } Queue;
 
-// Function to create a new queue
+/**
+ * Queue Creation
+ * @param capacity
+ * @return
+ */
 Queue *
 createQueue(unsigned capacity)
 {
@@ -59,21 +88,34 @@ createQueue(unsigned capacity)
     return queue;
 }
 
-// Function to check if the queue is empty
+/**
+ * @brief Check if the queue is empty
+ * @param queue
+ * @return true if the queue is empty, false otherwise
+ */
 bool
 isEmpty(Queue *queue)
 {
     return (queue->size == 0);
 }
 
-// Function to check if the queue is full
+/**
+ * @brief Check if the queue is full
+ * @param queue
+ * @return true if the queue is full, false otherwise
+ */
 bool
 isFull(Queue *queue)
 {
     return (queue->size == queue->capacity);
 }
 
-// Function to enqueue a cell in the queue
+/**
+ * @brief Enqueue a cell to the queue
+ * @param queue
+ * @param x
+ * @param y
+ */
 void
 enqueue(Queue *queue, int x, int y)
 {
@@ -85,7 +127,11 @@ enqueue(Queue *queue, int x, int y)
     queue->size                 = queue->size + 1;
 }
 
-// Function to dequeue a cell from the queue
+/**
+ * @brief Dequeue a cell from the queue
+ * @param queue
+ * @return
+ */
 QueueNode
 dequeue(Queue *queue)
 {
@@ -95,7 +141,12 @@ dequeue(Queue *queue)
     return cell;
 }
 
-// Function to perform BFS and find the shortest path
+/**
+ * @brief BFS to find the shortest path from start to goal
+ * @param maze      pointer to the maze
+ * @param startX    starting position x-coordinate
+ * @param startY    starting position y-coordinate
+ */
 void
 bfs_shortest_path(maze_t *maze, int startX, int startY)
 {
@@ -128,9 +179,6 @@ bfs_shortest_path(maze_t *maze, int startX, int startY)
         int       x       = current.x;
         int       y       = current.y;
 
-        // Process the cell (you can customize this part based on your needs)
-        // Here, we mark the cell with a special character to indicate it's part
-        // of the shortest path
         maze->mazecells[y][x].type = 'P'; // 'P' for path
 
         // Explore adjacent cells
@@ -372,8 +420,10 @@ maze_explored(const maze_t *maze)
     return true;
 }
 
-// Update the find_shortest_path function with the newly created
-// bfs_shortest_path function
+/**
+ * @brief Function to find the shortest path from start to goal
+ * @param maze
+ */
 void
 find_shortest_path(maze_t *maze)
 {
